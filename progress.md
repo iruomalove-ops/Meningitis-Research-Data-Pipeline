@@ -26,3 +26,26 @@ Form previewed and tested — branching logic fires correctly, calculated fields
 
 ### Next milestone
 Build D2 Demographics and Medical History instrument.
+## 2026-05-04 — Phase 1 D2 Demographics & Medical History instrument complete
+
+### What was built
+Second REDCap instrument for the Phase 1 dexamethasone trial. Captures the safety baseline that contextualises every subsequent visit and adverse event.
+
+### Final structure
+- **25 fields** across six sections — identity & demographics, vital signs at screening, medical history, current medications, lifestyle factors, vaccination & family history
+- **4 branching logic rules** — past medical history details, surgery details, allergy details, and medication list each appear only when the gateway Yes/No field is answered Yes
+- **22 required fields** plus 3 conditional fields that become required when their gateway triggers
+
+### Key design decisions
+- Used a gateway pattern for medical history sections — one Yes/No question that conditionally reveals the free-text details field. Saves time when most healthy volunteers have nothing to declare while still capturing full detail when needed.
+- Captured race and ethnicity separately following FDA convention. Race matters clinically because CYP3A4 polymorphisms vary between populations and affect dexamethasone metabolism — a covariate for the PK analysis later.
+- Quantified alcohol and caffeine intake as numeric fields rather than categorical. This turns lifestyle data into analysable covariates for the PK model.
+- Included recent vaccination status because immune activation from a recent vaccine could confound corticosteroid effects.
+
+### New skills practised
+Wrote branching logic formulas from scratch using the syntax `[variable_name] = 'value'`. Understood why branching is set on the field that should appear, not on the trigger field.
+
+### Next milestone
+Build D3 Dose Escalation instrument — captures cohort assignment, sentinel dosing rules, and the dose escalation decision log.
+
+---
