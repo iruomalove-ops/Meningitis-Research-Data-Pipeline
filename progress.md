@@ -48,4 +48,30 @@ Wrote branching logic formulas from scratch using the syntax `[variable_name] = 
 ### Next milestone
 Build D3 Dose Escalation instrument — captures cohort assignment, sentinel dosing rules, and the dose escalation decision log.
 
+## 2026-05-04 — Phase 1 D3 Dose Escalation instrument complete
+
+### What was built
+Third REDCap instrument for the Phase 1 dexamethasone trial. Captures the operational backbone of the dose escalation study — cohort assignment, sentinel dosing, Safety Review Committee gates, and escalation decisions.
+
+### Final structure
+- **22 fields** across five sections — cohort assignment, dose information, SRC safety gates, escalation decision, protocol deviations
+- **5 branching logic rules** — sentinel-specific safety review fields appear only for sentinel volunteers, DLT description appears only when DLT observed, deviation detail fields appear only when a deviation occurred
+- **1 calculated field** — dose per kg automatically computed from planned dose divided by body weight pulled from D2
+- **15 required fields** with the five-option SRC decision dropdown as the most consequential field in the entire trial
+
+### Key design decisions
+- Used a five-option dropdown for SRC decision rather than a simple yes or no — captures the full clinical reality of escalation choices (escalate, repeat, de-escalate, hold, or stop the trial entirely).
+- Created branching logic that links cohort_position to is_sentinel automatically — only positions 1 and 2 are sentinels per protocol. This prevents data entry errors.
+- Captured IMP batch number and expiry as required fields. In real trials this is non-negotiable for traceability — if a safety signal emerges weeks later, regulators trace it back through batch numbers.
+- Added a separate protocol deviations section with branching to reporting confirmations. Forces nurses to confirm sponsor and ethics notification when deviations occur.
+
+### What I learned this session
+- How dose escalation actually works in a Phase 1 trial — sentinel dosing with a 48 hour observation gate before exposing the rest of the cohort
+- Dose-Limiting Toxicity (DLT) is the criterion that pauses or stops escalation — typically CTCAE Grade 3+ AEs related to the study drug
+- The SRC (Safety Review Committee) is the binding decision-making body for escalation, not the PI alone
+- The dose per kg calculation matters because drug exposure is body-weight dependent
+
+### Next milestone
+Build D4 PK Sampling Schedule — the hero data domain for Phase 1. Captures every blood draw timepoint, the actual sample time vs scheduled time, sample handling, and centrifugation. This is the data that will populate the PK concentration-time curve in the Power BI dashboard.
+
 ---
