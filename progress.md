@@ -75,3 +75,37 @@ Third REDCap instrument for the Phase 1 dexamethasone trial. Captures the operat
 Build D4 PK Sampling Schedule — the hero data domain for Phase 1. Captures every blood draw timepoint, the actual sample time vs scheduled time, sample handling, and centrifugation. This is the data that will populate the PK concentration-time curve in the Power BI dashboard.
 
 ---
+## 2026-05-04 — Phase 1 D4 PK Sampling Schedule instrument complete
+
+### What was built
+The hero data domain of the Phase 1 trial. D4 captures every blood draw at every pharmacokinetic timepoint — the dataset that will eventually populate the concentration-time curve in Power BI and feed every PK calculation in Python.
+
+### Final structure
+- **18 fields** across four sections — timepoint identification, sample collection, sample handling and processing, bioanalytical assay result
+- **8 branching logic rules** — most sample handling fields hide when sample_collected = No, replaced by a missed reason dropdown
+- **1 calculated field** — time deviation in minutes, computed automatically from actual time minus scheduled time
+- **Repeating instrument design** — when REDCap events are configured this single instrument will be assigned to 8 separate events (pre-dose, 30min, 1h, 2h, 4h, 8h, 24h, 48h) generating 144 rows of time-series data across 18 volunteers
+
+### Key design decisions
+- Captured both scheduled time and actual time as separate required fields. The pharmacokineticist needs actual times not scheduled times to fit the PK curve correctly. Honesty in data is more valuable than perfect adherence to schedule.
+- Made the timepoint a dropdown not free text. Standardised values prevent data entry chaos when SQL queries try to filter by timepoint later. "T30min" "30 min" and "0.5h" would all be the same thing in different forms — the dropdown forces consistency.
+- Used a gateway pattern around sample_collected. If the sample was missed, eight subsequent fields hide and a single missed_reason dropdown appears. Captures full detail when needed without cluttering the form when not.
+- Documented the BLQ (Below Limit of Quantification) flag explicitly. At 24 and 48 hour timepoints concentrations may genuinely be too low to measure. BLQ is informative not missing data — flagging it correctly matters for PK analysis.
+- Included sample handling fields (centrifuge time, storage temperature, tube type) that are not directly used in PK calculation but provide audit trail for sample integrity. Wrong tube type or delayed centrifugation invalidates the assay.
+
+### What I learned this session
+- The PK sampling schedule is the skeleton of a Phase 1 trial. Everything else (eligibility, demographics, dose escalation) supports getting clean PK data
+- Actual time vs scheduled time matters more than I realised. A 32-minute draw recorded as 30 minutes corrupts the curve fitting
+- BLQ samples are not the same as missing samples. They are valid data points that say "concentration is below the assay's detection threshold"
+- Sample handling is part of the data integrity chain. The lab cannot fix a sample that was left at room temperature too long
+
+### Dataset projection
+With 8 timepoints multiplied by 18 volunteers across 3 cohorts the trial generates approximately 144 rows of time-series concentration data. This is the dataset that will:
+- Feed the SQL window functions for cohort comparison queries
+- Drive the Python AUC calculation using scipy.integrate.trapz
+- Populate the hero PK concentration-time curve visual in the Power BI dashboard with individual volunteer lines and cohort mean overlay
+
+### Next milestone
+Build D5 Safety Labs and Vitals — captures all clinical chemistry and haematology results at scheduled timepoints plus vital sign monitoring. Detects steroid-induced hyperglycaemia, electrolyte disturbance, and any haematological signal during the trial.
+
+---
