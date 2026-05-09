@@ -108,4 +108,27 @@ With 8 timepoints multiplied by 18 volunteers across 3 cohorts the trial generat
 ### Next milestone
 Build D5 Safety Labs and Vitals — captures all clinical chemistry and haematology results at scheduled timepoints plus vital sign monitoring. Detects steroid-induced hyperglycaemia, electrolyte disturbance, and any haematological signal during the trial.
 
+---## 2026-05-09 — D5 Safety Labs and Vitals imported via data dictionary
+
+### What was built
+D5 imported successfully using a REDCap data dictionary CSV — 32 fields covering
+visit context, vital signs, full blood count, liver function tests, renal function
+and electrolytes, glucose monitoring with auto-warning above 11 mmol/L, and
+investigator review.
+
+### Incident — D1 to D4 lost during import
+The data dictionary upload replaced the entire project instrument list rather than
+appending D5 alongside existing instruments. D1 through D4 were removed. This is a
+known REDCap behaviour when uploading a data dictionary without first exporting the
+current project state.
+
+### Lesson learned
+Always export the current data dictionary before uploading a new one. The export
+creates a CSV backup of the entire project that can be re-imported if something goes
+wrong. This is standard defensive practice in clinical data management.
+
+### Recovery plan
+Regenerate D1 through D4 as individual data dictionaries and re-import each one
+using append mode. All field definitions are preserved in project documentation.
+
 ---
