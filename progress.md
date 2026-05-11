@@ -132,3 +132,42 @@ Regenerate D1 through D4 as individual data dictionaries and re-import each one
 using append mode. All field definitions are preserved in project documentation.
 
 ---
+## 2026-05-11 — Phase 1 CRF complete: all 7 instruments imported via master data dictionary
+
+### What was built
+The complete Phase 1 case report form for the dexamethasone PK trial — all seven instruments built and imported into REDCap in a single master data dictionary upload. The CRF is now ready to receive simulated volunteer data.
+
+### Final structure of the Phase 1 CRF
+- **D1 Healthy Volunteer Eligibility** — 27 fields covering site identification demographics inclusion criteria exclusion criteria and eligibility conclusion with screen failure branching
+- **D2 Demographics and Medical History** — 25 fields with gateway pattern for medical history surgery allergies and current medications
+- **D3 Dose Escalation** — 22 fields capturing cohort assignment sentinel dosing rules Safety Review Committee gates escalation decisions and protocol deviations
+- **D4 PK Sampling Schedule** — 18 fields designed as a repeating instrument for the 8 timepoints from pre-dose through 48 hours
+- **D5 Safety Labs and Vitals** — 32 fields covering vital signs full blood count liver function renal function electrolytes glucose monitoring and investigator review
+- **D6 Adverse Events and SAEs** — 16 fields with CTCAE grading causality assessment and regulatory reporting timestamps
+- **D7 Volunteer Symptom Diary** — 14 fields capturing daily symptom severity ratings across 7 days post-dose
+
+### Total CRF metrics
+- 7 instruments
+- Approximately 145 individual fields
+- 25 branching logic rules across all instruments
+- 2 calculated fields — BMI in D1 and dose per kg in D3
+- 14 date fields using ISO 8601 format
+- One repeating instrument design (D4 across 8 PK timepoints)
+
+### Standards locked in across every instrument
+- All dates use ISO 8601 format YYYY-MM-DD per international regulatory standard
+- Units captured in field notes never in field labels following CDISC SDTM convention
+- Field labels kept short and clean for readable database column names
+- No redundant fields — broader clinical criteria trusted over duplicative narrow checks
+- All branching logic uses parser safe syntax that survives data dictionary import
+
+### Hard lessons from this session
+- REDCap data dictionary upload defaults to replace mode wiping any instruments not in the uploaded CSV. Lost D1 D2 D3 D4 when uploading D5 alone. Recovered by rebuilding all seven instruments into a single master CSV.
+- REDCap calc parser cannot handle fractional negative exponents or the today function during data dictionary validation. Switched eGFR from calculated to plain number field. Switched age from calc to integer entry. Both reflect real clinical workflow — labs report eGFR and nurses calculate age once at screening.
+- CSV column alignment is critical. Three rows with one missing empty column caused branching logic syntax errors. Every row must have exactly 18 columns matching the header.
+- The defensive workflow is now standard practice — always export current data dictionary before uploading a new one. Treat the export as a backup.
+
+### Next milestone
+Set up REDCap events to define the visit schedule — screening dosing day with eight PK timepoints and day 7 follow-up. Then assign instruments to events. After that simulate dummy volunteer data and export to SQL for the analysis pipeline.
+
+---
