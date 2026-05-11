@@ -212,3 +212,33 @@ This shows lab fields only at Screening, Pre-dose Day 0, PK T+8h, PK T+24h, PK T
 Complete the instrument-to-event assignment grid. Then simulate dummy volunteer data across all 10 events and 18 volunteers. Export to SQL for the analysis pipeline.
 
 ---
+## 2026-05-11 — Instrument to event assignment complete — Phase 1 CRF fully wired
+
+### What was built
+Completed the Designate Instruments for My Events grid in REDCap. Every instrument is now wired to fire at its correct event in the trial timeline. The Phase 1 CRF is structurally complete and ready to receive volunteer data.
+
+### Final assignment grid — 30 ticks total
+- D1 Healthy Volunteer Eligibility fires at Screening only — one-time eligibility check
+- D2 Demographics and Medical History fires at Screening only — one-time baseline
+- D3 Dose Escalation fires at Day 0 Dosing only — single dose per volunteer
+- D4 PK Sampling Schedule fires at 8 events from Day 0 through PK T+48h — generates the time-series concentration dataset
+- D5 Safety Labs and Vitals fires at every event from Screening through Day 7 — conditional branching controls which fields appear
+- D6 Adverse Events and SAEs fires from Day 0 onwards at five events — AEs can emerge any time post-dose
+- D7 Volunteer Symptom Diary fires at four events from Day 0 through Day 7 — captures daily symptom severity
+
+### Dataset projection
+With 18 volunteers across 3 cohorts and 10 events per volunteer, the trial generates approximately 180 event records. D4 PK Sampling alone produces 8 records per volunteer for 144 total rows of plasma concentration data. D5 produces 10 records per volunteer for 180 rows of vital signs with conditional lab data at the safety checkpoints. This is the dataset that will feed the SQL queries, the Python PK analysis, and the Power BI dashboard.
+
+### How the trial actually flows now
+A volunteer enters at Screening where D1 D2 and D5 fire. If eligible they proceed to Day 0 Dosing where D3 D4 D5 D6 D7 all fire — the busiest event in the trial. They then have D4 and D5 firing at every PK timepoint with vitals captured continuously and the full safety panel at T+8h T+24h and T+48h. D7 diary entries are collected at 24h 48h and again at Day 7 follow-up. The trial closes out at Day 7 with final safety labs AE review and diary completion.
+
+### What I learned this session
+- Event design and instrument assignment together determine the longitudinal structure of the trial
+- The same instrument can fire many times across events — D5 fires 10 times per volunteer because of the branching design
+- The Designate Instruments grid is where the visit schedule and the form library become a real database
+- Verifying the wiring by adding a test record reveals immediately whether the assignment is correct — each event row should show only the relevant instruments
+
+### Next milestone
+Simulate dummy volunteer data — add 18 test records walking through every event for each one. Then export the dataset to SQL and begin the analysis pipeline.
+
+---
