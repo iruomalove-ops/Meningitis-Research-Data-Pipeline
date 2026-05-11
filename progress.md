@@ -171,3 +171,44 @@ The complete Phase 1 case report form for the dexamethasone PK trial — all sev
 Set up REDCap events to define the visit schedule — screening dosing day with eight PK timepoints and day 7 follow-up. Then assign instruments to events. After that simulate dummy volunteer data and export to SQL for the analysis pipeline.
 
 ---
+## 2026-05-11 — REDCap events defined and D5 redesigned with conditional branching
+
+### What was built this session
+Two interconnected milestones — first the visit schedule was defined as REDCap events, then a design flaw uncovered during event mapping was fixed by adding conditional branching logic to D5.
+
+### Part 1 — Defined the 10 events of the Phase 1 trial
+Set up the longitudinal visit schedule in REDCap Arm 1. The 10 events define the full volunteer journey from screening through 48 hour PK sampling to Day 7 safety follow-up.
+
+The event schedule:
+- Screening at Day -7
+- Day 0 Dosing
+- PK T+30min through PK T+48h covering all 8 pharmacokinetic timepoints
+- Day 7 follow-up
+
+Each event has its day offset configured for the visit calendar. Unique event names auto-generated in the format event_name_arm_1 for use in branching logic and SQL queries later.
+
+### Part 2 — Discovered the D5 design flaw during event mapping
+While planning which instruments fire at which event, realised D5 Safety Labs and Vitals could not simply fire only at the safety lab events. Vital signs need capturing at every PK timepoint because dexamethasone can cause acute haemodynamic effects within minutes of dosing. But full safety labs do not need to be drawn at every PK timepoint because most steroid-induced lab changes take hours to develop and continuous draws would mean unacceptable blood loss.
+
+The flaw was that D5 as originally designed locked vital signs and labs together — fire D5 at every PK timepoint and waste the nurse time on hidden lab fields, or skip D5 at PK timepoints and miss critical vital sign data.
+
+### Part 3 — Fixed D5 with conditional branching driven by the visit timepoint
+Rather than create a separate vital signs instrument or add a redundant gateway field, expanded the existing d5_visit_timepoint dropdown to include all 10 events. Added branching logic to all 17 lab fields plus the investigator review section using the timepoint variable itself as the controller.
+
+The branching condition applied to every lab field is:
+[d5_visit_timepoint] = '1' or [d5_visit_timepoint] = '2' or [d5_visit_timepoint] = '7' or [d5_visit_timepoint] = '8' or [d5_visit_timepoint] = '9' or [d5_visit_timepoint] = '10'
+
+This shows lab fields only at Screening, Pre-dose Day 0, PK T+8h, PK T+24h, PK T+48h, and Day 7. At PK timepoints 30min through 4h the form collapses to vital signs only.
+
+### Skills learned and locked in
+- The OR operator in branching logic joins multiple value comparisons of the same variable
+- AND requires all conditions to be true at once
+- Parentheses group conditions when mixing operators
+- Don't repeat yourself principle applies to CRF design — if an existing field already carries information, do not add a duplicate gateway field
+- One intelligent instrument that adapts via branching is cleaner than two instruments that share concepts
+- Event design and instrument design influence each other — discovering structural issues during event mapping is normal and the fix often improves the underlying instrument
+
+### Next milestone
+Complete the instrument-to-event assignment grid. Then simulate dummy volunteer data across all 10 events and 18 volunteers. Export to SQL for the analysis pipeline.
+
+---
