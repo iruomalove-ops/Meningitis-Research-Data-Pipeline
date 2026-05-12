@@ -242,3 +242,37 @@ A volunteer enters at Screening where D1 D2 and D5 fire. If eligible they procee
 Simulate dummy volunteer data — add 18 test records walking through every event for each one. Then export the dataset to SQL and begin the analysis pipeline.
 
 ---
+## 2026-05-11 — First 2 test volunteers entered + D5 age field cleanup
+
+### What was completed
+Entered the first two test volunteer records in REDCap as part of the hybrid data simulation approach. Manual entry validates the form works end-to-end and provides realistic seed data for the Python simulation script that will generate the remaining 16 records.
+
+### The volunteers entered
+- Volunteer 001 — Cohort A low dose sentinel position
+- Volunteer 002 — Cohort C high dose non-sentinel position
+
+This combination tests both ends of the dose escalation range and exercises the sentinel-specific branching in D3.
+
+### Design improvement discovered during data entry
+While completing D5 at the screening event the redundancy of capturing age in both D1 and D5 became obvious. The d5_age_at_visit field was a band-aid added during an earlier data dictionary recovery when the eGFR calc field needed an age reference within the instrument.
+
+Once eGFR was changed from a calculated field to a plain number field reported by the bioanalytical lab the entire reason for d5_age_at_visit disappeared. The field had become orphaned clutter.
+
+### The decision
+Deleted d5_age_at_visit entirely. No replacement needed. Age is captured once in D1 at screening and available across all events via REDCap's cross-instrument variable references. No other D5 field needs age for any calculation reference range or branching logic.
+
+### Skills demonstrated this session
+- Identifying redundant fields by questioning whether each field earns its place in the instrument
+- Recognising that the single source of truth principle applies to demographic data as much as to clinical data
+- REDCap cross-instrument variable references make data duplication unnecessary in longitudinal projects
+- Real CRF improvement work happens during data entry — the act of using a form reveals design issues that pure design review cannot catch
+
+### Lessons locked in for future instruments
+- Before adding a field always check whether the information already exists elsewhere in the project
+- When changing one design decision (eGFR calc to plain text) check whether dependent fields are still justified
+- Data entry testing is QA — it surfaces issues that need fixing before the trial goes live
+
+### Next milestone
+Generate the remaining 16 volunteers via Python data simulation script. Combine with the 2 manual REDCap records to produce the final 18-volunteer dataset ready for SQL export and analysis.
+
+---
