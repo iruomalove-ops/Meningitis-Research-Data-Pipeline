@@ -276,3 +276,23 @@ Deleted d5_age_at_visit entirely. No replacement needed. Age is captured once in
 Generate the remaining 16 volunteers via Python data simulation script. Combine with the 2 manual REDCap records to produce the final 18-volunteer dataset ready for SQL export and analysis.
 
 ---
+## 2026-05-11 — Python dictionary fundamentals completed
+
+### What was learned this session
+Worked through five hands-on lessons on Python dictionaries in learning_notes.ipynb. Each concept practised with code that actually ran in Jupyter not just theory. Variables and lists were covered in previous sessions.
+
+### Concepts covered
+- Creating dictionaries with key value pairs
+- Accessing values by key using square bracket syntax
+- Changing existing values and adding new keys
+- Looping through dictionaries using keys values and items
+- Nested dictionaries where a value is itself another dictionary
+- Lists of dictionaries which is the pattern used to represent multiple clinical trial records
+
+### Why this matters for the project
+Every simulated volunteer in the upcoming data simulation script will be represented as a nested dictionary. A list of 18 volunteer dictionaries becomes the in-memory dataset before export to CSV. The looping pattern learned this session is the workhorse for processing each volunteer.
+
+### Next milestone
+Begin writing the simulate_volunteers.py script. The script will generate 16 realistic dummy volunteers matching the REDCap schema. Combined with the 2 manual records this completes the 18 volunteer Phase 1 dataset.
+
+---
