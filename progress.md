@@ -296,3 +296,30 @@ Every simulated volunteer in the upcoming data simulation script will be represe
 Begin writing the simulate_volunteers.py script. The script will generate 16 realistic dummy volunteers matching the REDCap schema. Combined with the 2 manual records this completes the 18 volunteer Phase 1 dataset.
 
 ---
+## 2026-05-12 — Python functions fundamentals + data pipeline design philosophy
+
+### What was learned this session
+Completed the core Python functions lessons in learning_notes.ipynb — function definition with the def keyword, parameters, return values, and default parameter values. Practised each concept with code that ran successfully in Jupyter.
+
+### Concepts covered
+- Defining functions with the def keyword
+- Indentation as the structural marker for what belongs inside a function
+- Parameters for passing inputs to a function
+- Return values for handing results back to the caller
+- Default parameter values for optional arguments
+- Functions that return dictionaries — the pattern that will drive the simulation script
+
+### Design philosophy locked in
+While working through the lessons two important architectural principles emerged that will shape the rest of the project.
+
+First — separation of concerns. The function should handle everything that varies between volunteers and the caller should just ask for a volunteer with minimal inputs. Twenty parameters per function call is no easier than writing the code manually. Hide complexity behind a simple interface.
+
+Second — focus the simulation on analytically meaningful data not realistic-looking identifiers. This is a data analytics portfolio not a data entry system. Nobody will ever look at volunteer 7 individually so the initials and full demographic details do not matter. What matters is that the PK curves are realistic the AE distributions are plausible and the lab values reflect real safety patterns. The identifiers are just sequential labels that link records together.
+
+### Why this matters
+This thinking applies to every subsequent step in the project. SQL queries focus on aggregate analyses not row-by-row manipulation. Python notebooks automate the calculations that drive insights. Power BI dashboards present aggregate metrics not record drill-downs. The simulation script being built reflects this philosophy from the start.
+
+### Next milestone
+Final basics concept — the random module for generating realistic variability. After that begin writing simulate_volunteers.py with the design philosophy applied throughout.
+
+---
