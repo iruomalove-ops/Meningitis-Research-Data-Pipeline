@@ -341,3 +341,30 @@ Variables types lists tuples dictionaries nested dictionaries lists of dictionar
 Begin writing simulate_volunteers.py applying the separation of concerns and analytical focus principles established in earlier sessions. The function will generate analytically meaningful data with sequential identifiers and let random produce the variability.
 
 ---
+## 2026-05-12 — Simulation script design locked — realistic enrolment funnel
+
+### The simulation design philosophy
+Decided to build the simulation script as a realistic clinical data engineering pipeline rather than a clean analytical dataset. The script will replicate every REDCap field from every form generating messy real-world style data. This data then flows through Power Query for cleaning before reaching SQL — mirroring exactly how clinical data moves in real pharma and CRO environments where nobody hands you a clean OMOP dataset.
+
+### The enrolment funnel design
+The simulation will generate a realistic volunteer journey from screening through trial completion.
+
+- 100 volunteers screened at D1 to generate a meaningful screen failure dataset
+- 80 screen failures distributed across multiple realistic reasons including BMI out of range abnormal screening labs prohibited medication volunteer withdrew consent and exclusion criterion present
+- 20 eligible volunteers progress to randomisation and complete D2 and subsequent instruments
+- 2 dropouts at random points during the trial to capture realistic missing data patterns
+- 18 volunteers complete the full PK schedule with all 8 timepoints
+
+### Output structure
+One CSV file per instrument matching REDCap export naming conventions. After all instruments are generated the CSVs combine into a single Excel workbook with one sheet per instrument. This Excel file becomes the input to the Power Query cleaning stage.
+
+### Build approach locked in
+Start with D1 only. Build it. Test it. Confirm the CSV looks right. Only then add D2 D3 D4 D5 D6 D7 one at a time. Each instrument is its own focused piece of work.
+
+### Why this approach matters for the portfolio
+Demonstrates understanding of the real clinical data engineering pipeline not just analytical work. Shows familiarity with realistic data quality issues missing values and screen failure analysis. Sets up Power Query skills, Produces an audit trail of decisions that mirror how a clinical data manager actually works.
+
+### Next milestone
+Begin writing simulate_volunteers.py starting with the file header imports 
+
+---
