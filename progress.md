@@ -314,12 +314,30 @@ While working through the lessons two important architectural principles emerged
 
 First — separation of concerns. The function should handle everything that varies between volunteers and the caller should just ask for a volunteer with minimal inputs. Twenty parameters per function call is no easier than writing the code manually. Hide complexity behind a simple interface.
 
-Second — focus the simulation on analytically meaningful data not realistic-looking identifiers. This is a data analytics portfolio not a data entry system. Nobody will ever look at volunteer 7 individually so the initials and full demographic details do not matter. What matters is that the PK curves are realistic the AE distributions are plausible and the lab values reflect real safety patterns. The identifiers are just sequential labels that link records together.
-
+Second — focus the simulation on analytically meaningful data not realistic-looking identifiers. This is a data analytics portfolio not a data entry system. Nobody will ever look at volunteer 7 individually so the initials and full demographic details do not matter. What matters is that the PK curves are realistic the AE distributions are plausible and the lab values reflect real safety patterns. The identifiers are just sequential labels that link records together.Of course, this approach applies specifically to this project; different projects will require tailored strategies that best suit their unique goals and requirements.
 ### Why this matters
 This thinking applies to every subsequent step in the project. SQL queries focus on aggregate analyses not row-by-row manipulation. Python notebooks automate the calculations that drive insights. Power BI dashboards present aggregate metrics not record drill-downs. The simulation script being built reflects this philosophy from the start.
 
 ### Next milestone
 Final basics concept — the random module for generating realistic variability. After that begin writing simulate_volunteers.py with the design philosophy applied throughout.
+
+---
+## 2026-05-12 — Python random module — final basics lesson complete
+
+### What was learned
+Worked through the random module in learning_notes.ipynb. The random module is the engine that drives the simulation script — it generates realistic variability so each call to make_volunteer produces a different result.
+
+### Functions practised
+- random.randint for whole number ranges like volunteer age
+- random.uniform for decimal ranges like body weight in kilograms
+- random.choice for picking one item from a list like cohort assignment or sex
+- random.gauss for bell-curve distributions like systolic blood pressure clustered around a mean
+- The import statement for loading external modules into a Python script
+
+### Basics milestone complete
+Variables types lists tuples dictionaries nested dictionaries lists of dictionaries for loops functions parameters return values default parameters and the random module are all covered. .
+
+### Next milestone
+Begin writing simulate_volunteers.py applying the separation of concerns and analytical focus principles established in earlier sessions. The function will generate analytically meaningful data with sequential identifiers and let random produce the variability.
 
 ---
