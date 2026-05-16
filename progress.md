@@ -368,3 +368,45 @@ Demonstrates understanding of the real clinical data engineering pipeline not ju
 Begin writing simulate_volunteers.py starting with the file header imports 
 
 ---
+## 2026-05-12 — D1 simulation script complete — 100 volunteer records generated
+
+### What was built
+Wrote simulate_volunteers.py from scratch. The script generates 100 simulated healthy volunteer screening records matching the REDCap D1 instrument schema with realistic enrolment funnel dynamics. Output saved to d1_eligibility.csv ready for the Power Query cleaning stage.
+
+### The functional pieces
+- File header docstring and imports of random, csv and datetime modules
+- D1 template dictionary defining 26 fields with REDCap coded value placeholders
+- make_d1_record function that generates one volunteer with random demographics and derives eligibility from inclusion exclusion criteria
+- Loop calling the function 100 times to build a list of 100 records
+- CSV export using csv DictWriter with field order driven by the template
+
+### Realistic features built in
+- Sequential site IDs in ZA-CPT-P1-001 format
+- Dates of birth generated as real random dates not just year variations
+- Sex-dependent weight and height distributions using bell curves
+- BMI calculated from generated weight and height
+- Inclusion criteria I1 and I2 derived deterministically from age and BMI
+- Inclusion criteria I3 I6 I7 generated with realistic probabilities
+- Nine exclusion criteria with realistic probability rates per clinical context
+- E5 pregnancy field empty for non-female volunteers matching REDCap branching behaviour
+- Eligibility determination derived from all I and E values using all and any
+- Screen failure reason coded based on which criterion actually failed
+- All REDCap coded values used throughout matching real export format
+
+### Skills demonstrated and learned
+- Python language fundamentals applied to a real problem
+- Function design with single source of truth principle
+- Branching logic and comparison operators
+- List comprehensions with all and any built ins
+- File I O with the with statement and DictWriter
+- Date arithmetic using timedelta
+- Debugging real errors including variable name mismatches case sensitivity and hyphen versus underscore confusion
+- The discipline of testing each line before moving on
+
+### Output produced
+d1_eligibility.csv with 100 rows and 26 columns matching the D1 instrument structure. Roughly 80 percent of records show as screen failures with reason codes derived from their actual criterion failures. Approximately 20 percent show as eligible ready for D2 enrolment.
+
+### Next milestone
+Build make_d2_record using the same pattern. D2 only generates for the 20 eligible volunteers from D1 establishing the enrolment funnel through to randomisation.
+
+---
