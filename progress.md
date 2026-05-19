@@ -410,3 +410,24 @@ d1_eligibility.csv with 100 rows and 26 columns matching the D1 instrument struc
 Build make_d2_record using the same pattern. D2 only generates for the 20 eligible volunteers from D1 establishing the enrolment funnel through to randomisation.
 
 ---
+## 2026-05-15 — D2 step 1 complete — read D1 CSV and filter to eligible volunteers
+
+### What was built
+Started simulate_d2.py with the new Python concept of reading a CSV file into Python and filtering rows by a condition. The script reads d1_eligibility.csv produces a list of 100 D1 records then filters to the 20 volunteers whose eligibility determination is 1. Those 20 are exported to eligible_volunteers.csv as a reference dataset.
+
+### New Python concepts applied
+- csv DictReader for parsing CSV files into lists of dictionaries
+- The string vs integer, when reading from CSV all values come back as strings
+- Filtering a list using a for loop and conditional append
+- Using existing record keys as fieldnames when there is no separate template
+
+### The enrolment funnel narrowing visible
+Started with 100 screened volunteers in D1. Filtered to 20 eligible by eligibility determination equals 1. The screen failure rate of 80 percent matches realistic clinical trial recruitment statistics. Those 20 eligible volunteers become the input to all subsequent instruments.
+
+### Output produced
+eligible_volunteers.csv with 20 rows and 26 columns containing the full D1 record for each eligible volunteer. This file is a checkpoint not a deliverable. The actual D2 demographics generation continues in the next step.
+
+### Next milestone
+Build the D2 schema template and generate demographics fields race ethnicity vital signs lifestyle and medical history gateways for each of the 20 eligible volunteers.
+
+---
