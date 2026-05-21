@@ -431,3 +431,52 @@ eligible_volunteers.csv with 20 rows and 26 columns containing the full D1 recor
 Build the D2 schema template and generate demographics fields race ethnicity vital signs lifestyle and medical history gateways for each of the 20 eligible volunteers.
 
 ---
+## 2026-05-15 — D2 simulation script complete — 20 demographics and medical history records
+
+### What was built
+Built simulate_d2.py from scratch using the same pattern locked in with simulate_d1.py. The script reads d1_eligibility.csv filters to the 20 eligible volunteers and generates a complete D2 record for each one. Output saved to d2_demographics_and_medical_history.csv ready for the next pipeline stage.
+
+### The functional pieces
+- File docstring and imports of random csv and string modules
+- Country code lookup lists at the top of the file SA_CODE AFRICAN_CODES and REST_OF_WORLD_CODES
+- D2 schema template with 25 fields including identifier vital signs medical history gateways lifestyle vaccination and PI assessment
+- Read D1 CSV using csv DictReader and filter to eligible volunteers using a for loop with conditional append
+- make_d2_record function generates a complete D2 record from one eligible D1 volunteer
+- Loop calling make_d2_record for each of the 20 eligible volunteers
+- CSV export using DictWriter with field order driven by d2_template
+
+### New Python concepts learned this session
+- csv DictReader for parsing CSV files into lists of dictionaries
+- Filtering a list using a for loop and conditional append
+- The string vs integer when reading CSV all values come back as strings
+- The string module for ascii_uppercase letters used to build initials
+- The max function for flooring negative random gauss values at zero
+- Two stage random choice for country generation pick category then pick specific code
+- Multi line if statement using parentheses for readability when conditions span multiple lines
+
+### Realistic features built in
+- Initials generated as random three uppercase letters per volunteer
+- Race weighted to match Cape Town demographics 70 percent Black African 18 percent Coloured
+- Ethnicity heavily weighted to Not Hispanic matching ZA population
+- Country birth uses two stage logic 80 percent South Africa 15 percent specific African migrant countries 5 percent rest of world
+- African migrant countries restricted to seven realistic Cape Town communities Nigeria Zimbabwe Malawi Lesotho Somalia DRC Mozambique
+- Vital signs use bell curve distributions with realistic means and standard deviations
+- SpO2 uses random integer between 97 and 100 to guarantee clinically realistic values
+- Four medical history gateway pairs follow the if Yes populate details else empty pattern
+- Lifestyle factors use bell curves floored at zero for alcohol and caffeine
+- Exercise frequency weighted toward moderate to high activity matching healthy adult volunteers
+- PI assessment derived from structured fields as either Excellent health or Good health
+
+### Output produced
+d2_demographics_and_medical_history.csv with 20 rows matching the eligible volunteers from D1. Each row has 25 fields populated with realistic clinically appropriate values.
+
+### Cumulative enrolment funnel status
+- D1 100 screened generated as d1_eligibility.csv
+- D1 20 eligible exported as eligible_volunteers.csv reference checkpoint
+- D2 20 records generated for the eligible volunteers
+- D3 through D7 will continue applying the same architectural pattern
+
+### Next milestone
+Build simulate_d3.py for the dose escalation instrument. D3 fires once per eligible volunteer at Day 0 dosing. Will introduce cohort assignment based on enrolment order and sentinel positioning within cohorts.
+
+---
