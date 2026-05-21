@@ -1,0 +1,21 @@
+initials,race,ethnicity,country_birth,sbp_screen,dbp_screen,hr_screen,temp_screen,rr_screen,spo2_screen,pmh_any,pmh_details,surgery_any,surgery_details,allergy_any,allergy_details,med_any,med_list,alcohol_units,caffeine_cups,exercise_freq,vaccine_uptodate,recent_vaccine,family_history,pi_assessment
+WRT,1,2,159,113,71,59,36.8,17,99,0,,0,,0,,0,,4,0,4,1,0,0,Excellent health
+QKK,3,2,159,122,77,57,36.9,18,97,1,"mild eczema, resolved ",0,,1,"shellfish allergy, hives and swelling, avoid shellfish",0,,6,2,4,1,0,1,Good health
+ULQ,1,2,159,122,67,62,36.8,19,100,0,,0,,0,,0,,4,3,5,2,0,1,Good health
+QJO,2,2,159,109,63,62,37.1,21,99,0,,0,,0,,0,,2,2,5,1,0,0,Excellent health
+UCI,1,2,159,135,75,73,36.8,16,100,0,,1,"fracture repair age 15, healed with no sequelae",0,,0,,7,1,4,1,0,0,Good health
+MBO,1,2,159,121,78,86,37.3,12,99,1,childhood asthma,1,"appendectomy age 20, no complications",0,,0,,2,2,3,2,0,0,Good health
+EHB,1,2,159,126,81,63,36.4,15,100,1,"mild eczema, resolved ",0,,1,"shellfish allergy, hives and swelling, avoid shellfish",0,,9,3,5,1,0,1,Good health
+AYK,1,2,159,121,67,68,37.0,17,98,0,,0,,0,,0,,5,3,5,1,0,1,Good health
+OXI,2,2,159,128,69,61,37.2,14,97,1,"seasonal allergies, mild, no treatment",1,"hernia repair age 30, no complications",0,,0,,6,4,2,1,0,1,Good health
+IOP,1,2,159,129,80,77,37.1,14,97,0,,0,,0,,0,,5,2,2,1,0,0,Good health
+HUP,1,2,159,110,68,66,37.1,18,99,0,,0,,1,"shellfish allergy, hives and swelling, avoid shellfish",1,oral contraceptives,8,4,1,1,0,0,Good health
+CGX,1,2,159,117,70,79,36.7,15,99,1,"mild eczema, resolved ",1,"appendectomy age 20, no complications",0,,0,,8,0,3,1,0,1,Good health
+WYL,1,2,159,119,83,69,36.8,12,100,0,,1,"knee arthroscopy age 25, full recovery",1,"latex allergy, contact dermatitis, avoid latex products",0,,3,2,4,1,1,0,Good health
+XZY,3,3,159,108,76,85,37.0,16,99,0,,0,,0,,0,,1,3,4,1,0,0,Excellent health
+WDK,2,2,159,123,71,76,36.9,16,100,0,,0,,0,,0,,5,4,3,0,0,1,Good health
+YGW,3,1,116,117,54,77,36.6,19,99,0,,0,,1,"latex allergy, contact dermatitis, avoid latex products",0,,0,2,2,1,0,1,Good health
+KQM,2,2,159,117,77,74,36.4,16,100,0,,0,,0,,0,,7,1,3,1,0,1,Good health
+TMC,5,2,159,127,70,67,36.3,14,97,0,,1,"hernia repair age 30, no complications",0,,0,,4,0,4,1,0,1,Good health
+YWG,1,2,169,109,76,72,35.9,16,100,0,,0,,0,,0,,4,0,4,0,0,1,Good health
+LMN,1,2,159,129,75,84,36.2,13,97,1,"last attack age 12, no current symptoms nor treatments ",1,"appendectomy age 20, no complications",1,"penicillin allergy, rash and itching, avoid penicillins",0,,4,3,4,1,0,0,Good health
