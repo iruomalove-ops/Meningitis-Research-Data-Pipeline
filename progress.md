@@ -480,3 +480,34 @@ d2_demographics_and_medical_history.csv with 20 rows matching the eligible volun
 Build simulate_d3.py for the dose escalation instrument. D3 fires once per eligible volunteer at Day 0 dosing. Will introduce cohort assignment based on enrolment order and sentinel positioning within cohorts.
 
 ---
+## 2026-05-15 — Critical design flaw discovered — Identifier Block needed across all instruments
+
+### What was discovered
+While planning D3 dose escalation realised the trial design has a referential integrity problem. D1 has site_id as a unique key but D2 has no identifier connecting back to D1. D3 through D7 would inherit this problem. Without a shared identifier across instruments no SQL JOIN works and no Power BI cross-instrument analysis is possible.
+
+### The clinical context
+Real clinical trial datasets follow CDISC SDTM standards where every domain begins with an Identifier Block of common variables. These let you trace any record back to its volunteer their cohort their visit and the exact moment of collection. The first thing regulators check during submission is whether all datasets share the subject key.
+
+### The Identifier Block design
+Six identifiers will appear at the top of every record in every instrument from D1 onwards.
+
+- site_id format P1-NNN universal screening identifier assigned at first contact every screened volunteer gets one
+- subject_id format SUB-NNNN random four digit randomisation identifier assigned only to volunteers who proceed to dosing screen failures and not randomised volunteers get empty value
+- visit_id descriptive labels SCR DOSING T30M T1H T2H T4H T8H T24H T48H D7 identifies which trial visit a record was collected at
+- record_id format site_id-DN-visit unique row identifier within an instrument example P1-001-D4-T30M
+- cohort_id format COHORT-X dose cohort assignment values COHORT-A COHORT-B COHORT-C empty before randomisation
+- timestamp_collected format YYYY-MM-DD HH:MM:SS exact date time of collection important for D4 PK timing
+
+### The design decision rationale
+Random non-sequential subject_id matches real trial blinding practice. Sequential subject IDs would reveal dosing order. Descriptive visit_id reads naturally in dashboards and queries unlike numeric visit codes. Record_id with descriptive suffix lets you identify a record at a glance versus opaque UUID format. Dropping site code ZA-CPT from the prefix removes constant clutter while keeping P1 prevents collision when Phase 2 and Phase 3 work join the portfolio later.
+
+### Implementation plan
+Create identifiers.py shared module containing generator functions for all 6 identifiers. Retrofit simulate_d1.py and simulate_d2.py to use the new Identifier Block. Regenerate both CSVs with proper identifiers. Update the REDCap CRF to include matching Identifier Block fields so the actual form captures what the simulation generates. All subsequent instruments D3 through D7 will use the same architecture from the start.
+
+### What this teaches
+The single source of truth principle applied to identifiers. The DRY principle through a shared identifier module. CDISC SDTM standards which are the regulatory expectation for clinical datasets. Real data engineering happens iteratively as design flaws surface during implementation not before.
+
+### Next milestone
+Update REDCap forms with the Identifier Block then build identifiers.py shared module then retrofit D1 and D2 simulation scripts before continuing to D3.
+
+---
