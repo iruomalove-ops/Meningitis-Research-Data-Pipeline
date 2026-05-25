@@ -8,7 +8,7 @@ import csv
 from datetime import datetime, timedelta
 #The D1 schema/template defines the structure of one volunteer's data record, with all fields initialized to empty strings or zero values.
 d1_template = {
-    "site_id": "",
+    "record_id": "",
     "screening_date": "",
     "screened_by": "",
     "dob": "",
@@ -37,7 +37,7 @@ d1_template = {
 }  
 #site information
 def make_d1_record(volunteer_number):
-    site_id =f"ZA-CPT-P1-{volunteer_number:03d}"  # ZA-CPT-P1-001, ZA-CPT-002, etc.
+    record_id =f"ZA-CPT-P1-{volunteer_number:03d}"  # ZA-CPT-P1-001, ZA-CPT-002, etc.
     screening_date = datetime(2025,5,1) 
     screened_by = random.choice(["NMC","TLO","SJM"])
     #demographics 
@@ -113,7 +113,7 @@ def make_d1_record(volunteer_number):
     screen_failure_narrative = ""
     #assemble D1 record
     return {
-        "site_id": site_id,
+        "record_id": record_id,
         "screening_date": screening_date.strftime("%Y-%m-%d"),
         "screened_by": screened_by,
         "dob": dob.strftime("%Y-%m-%d"),
@@ -147,8 +147,8 @@ for volunteer_number in range(1,101):
     all_d1_records.append(record)
 #verification
 print(f"total records generated: {len(all_d1_records)}")
-print(f"first record site_id: {all_d1_records[0]['site_id']}")
-print(f"last record site_id: {all_d1_records[99]['site_id']}")
+print(f"first record record_id: {all_d1_records[0]['record_id']}")
+print(f"last record record_id: {all_d1_records[99]['record_id']}")
 # export to csv
 with open("d1_eligibility.csv", mode="w", newline="") as f:
     writer = csv.DictWriter(f, fieldnames=list(d1_template.keys()))

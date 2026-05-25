@@ -511,3 +511,50 @@ The single source of truth principle applied to identifiers. The DRY principle t
 Update REDCap forms with the Identifier Block then build identifiers.py shared module then retrofit D1 and D2 simulation scripts before continuing to D3.
 
 ---
+## 2026-05-15 — Architectural pivot — leverage REDCap built-ins instead of custom Identifier Block
+
+### What changed
+Reversed the decision to build a custom Identifier Block across all instruments. After spotting the variable name uniqueness rule in REDCap realised the custom approach would force ugly naming patterns like d1_p1_subject_id and would not scale. More importantly realised REDCap already provides relational integrity natively through record_id and redcap_event_name and redcap_repeat_instance which appear automatically in every longitudinal project export.
+
+### The new approach
+Use REDCap built in identifiers for relational linkage. Update the Python simulation to add the same three columns to every output CSV so the simulated data matches real REDCap export format. This is more authentic professionally and easier to maintain.
+
+### What REDCap provides natively
+- record_id — primary key for each volunteer assigned automatically at first contact appears in every record
+- redcap_event_name — identifies which event the row belongs to such as screening_arm_1 day_0_dosing_arm_1 pk_t30min_arm_1
+- redcap_repeat_instance — sequence number for repeating instruments such as D4 PK timepoints
+
+### Rollback actions
+Delete the four custom Identifier Block fields previously added to D1 . Restore screening_date and screened_by to original positions. The Python simulation scripts need updating to add the three REDCap auto columns to all CSV outputs.
+
+### Architectural lesson
+Before building custom infrastructure check whether the platform you are using already solves the problem. REDCap is a relational database and its longitudinal data model provides the linkage we were trying to recreate. Real CRF teams leverage these built ins rather than recreating them.
+
+### Next milestone
+Roll back the REDCap Identifier Block fields. Update simulate_d1.py and simulate_d2.py to add record_id redcap_event_name and redcap_repeat_instance columns to their CSV outputs. Regenerate the CSVs. Continue with D3 onwards using this corrected architecture.
+
+---
+## 2026-05-15 — Referential integrity restored — record_id added across D1 and D2
+
+### What was fixed
+Closed the referential integrity gap discovered earlier where D1 had a unique identifier but D2 had no column linking back. Without a shared key column the two CSVs could not be joined in SQL or related in Power BI. The fix involved two architectural changes in simulate_d1.py and simulate_d2.py.
+
+### Changes to simulate_d1.py
+Renamed the existing site_id variable to record_id everywhere it appears in the script. The variable name now matches REDCaps native primary key column convention. The values stay as ZA-CPT-P1-NNN format because only one site means site_id was misleading anyway. The d1_eligibility.csv now uses record_id as its first column header.
+
+### Changes to simulate_d2.py
+Added record_id as the first field in d2_template. Updated the make_d2_record function return statement to pull record_id from the d1_record parameter using d1_record[record_id]. The make_d2_record function already received the d1_record as input so the data was available, we just had to use it. The d2_demographics_and_medical_history.csv now has record_id as its first column with values matching the eligible volunteers from D1.
+
+### Verification
+Opened the regenerated d2 CSV. First column header is record_id. First few records show values like ZA-CPT-P1-001 ZA-CPT-P1-004 ZA-CPT-P1-005. These match the eligible volunteers from D1. Twenty rows of data plus one header row. The CSVs can now be joined on record_id in SQL.
+
+### Architectural pattern locked in for all future instruments
+Every instrument template starts with record_id as the first field. Every make_dN_record function takes the parent record as input and pulls record_id forward. This guarantees every CSV joins cleanly to D1 through the shared record_id column.
+
+### Lesson learned
+Referential integrity must be designed in from the start of every instrument. Trying to add it retroactively is doable but messy. Going forward D3 through D7 will include record_id in their templates as the first field by default and the make_dN_record functions will pull it from the parent record. The pattern is now muscle memory.
+
+### Next milestone
+Build simulate_d3.py for the dose escalation instrument. D3 fires once per eligible volunteer at Day 0 dosing. Will introduce cohort assignment based on the stratified randomisation workflow.
+
+---

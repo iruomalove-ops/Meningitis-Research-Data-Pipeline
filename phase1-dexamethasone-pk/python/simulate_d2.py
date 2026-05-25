@@ -22,6 +22,7 @@ with open("eligible_volunteers.csv", mode="w", newline="", encoding="utf-8") as 
     writer.writerows(eligible_volunteers)
 #d2_template - defines the dtructure of d2 records.
 d2_template = {
+    "record_id": "",
     "initials": "",
     "race": 0,
     "ethnicity": 0,
@@ -157,6 +158,7 @@ def make_d2_record(d1_record):
     else:
         pi_assessment = "Good health"
     return {
+        "record_id": d1_record["record_id"],  #use the same record_id as D1 to link records
         "initials": initials,
         "race": race,
         "ethnicity": ethnicity,
@@ -200,6 +202,8 @@ with open("d2_demographics_medical_history.csv", mode="w", newline="", encoding=
     writer.writeheader()
     writer.writerows(all_d2_records)
 print("D2 demographics and medical history records saved to d2_demographics_medical_history.csv")
+#verification 
+print(all_d2_records[0])
 
 
 
