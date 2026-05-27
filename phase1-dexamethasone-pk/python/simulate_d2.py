@@ -6,6 +6,8 @@ Reads d1_eligibility.csv and filters to volunteers where eligibility_determinati
 import random
 import csv
 import string
+# Lock random seed for reproducible data
+random.seed(42)
 #read D1 eligibility records and filter to eligible volunteers
 with open("d1_eligibility.csv","r", encoding="utf-8") as f:
     reader = csv.DictReader(f)

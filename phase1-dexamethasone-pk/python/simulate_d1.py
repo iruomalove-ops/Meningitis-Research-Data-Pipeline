@@ -6,6 +6,8 @@ Generates simulated Phase 1 trial data with realistic enrolment funnel.
 import random
 import csv
 from datetime import datetime, timedelta
+# Lock random seed for reproducible data
+random.seed(42)
 #The D1 schema/template defines the structure of one volunteer's data record, with all fields initialized to empty strings or zero values.
 d1_template = {
     "record_id": "",

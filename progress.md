@@ -558,3 +558,44 @@ Referential integrity must be designed in from the start of every instrument. Tr
 Build simulate_d3.py for the dose escalation instrument. D3 fires once per eligible volunteer at Day 0 dosing. Will introduce cohort assignment based on the stratified randomisation workflow.
 
 ---
+## 2026-05-16 — D3 simulation Sections 1-6 complete — block randomisation working
+
+### What was built in this session
+Built simulate_d3.py through Section 6 of the planned 9-section architecture. Completed configuration setup data loading stratification block randomisation and reserve handling. Section 7 the make_d3_record function partially completed and parked for a design review.
+
+### Architectural decisions locked in this session
+
+**Random seed for reproducibility.** Added random.seed(42) to both simulate_d1.py and simulate_d2.py. Every run now produces identical data which makes debugging easier and matches real clinical trial standards where reproducible randomisation is a regulatory requirement.
+
+**Stratified block randomisation algorithm fully implemented.** The script reads D2 stratifies volunteers into three piles based on pi_assessment and family_history then block randomises 1 Excellent plus 2 Standard plus 3 Family History into each of three cohorts. Six volunteers per cohort 18 dosed total. Sentinels are positions 1 and 2 in each cohort.
+
+**Reserve handling shifted from upfront withdrawal to natural leftovers.** Original design pulled 2 reserves from Family History upfront. After locking the random seed D2 produced 28 eligible volunteers with 16 Standard 9 Family History and 3 Excellent. With Family History now exactly matching the 9 needed for randomisation reserves naturally emerge from the overrepresented Standard pile. Old Section 3 disabled and commented in place as design history.
+
+**Cleanup of weight_kg in Section 5.** Removed the line that tried to access weight_kg from D2 records because D2 does not carry that field. Created a separate D1 weight lookup dictionary used by Section 7 for dose calculations.
+
+### New Python concepts learned this session
+- random sample for picking k unique items without replacement
+- random shuffle for in place list reordering
+- list pop with index zero for sequential removal from front of a list
+- list extend for adding all items from one list to another
+- enumerate with start argument for getting position and item simultaneously
+- ternary expression for one line if else assignments
+- nested for loops for cohort and position iteration
+- sum with generator expression for counting matching items
+- datetime strptime and strftime for date string conversion
+- timedelta for date arithmetic
+- dictionary based lookup for cross instrument data access
+
+### Output produced through Section 6
+- assignments list with 28 entries
+- 18 marked Randomised with cohort assignment cohort_position and is_sentinel
+- 10 marked Reserve with empty cohort fields
+- All 28 reference back to D1 via record_id
+
+### Design discovery to revisit
+While building Section 7 surfaced a real clinical question about temporal reality. The D3 instrument as currently designed includes fields that get filled at different times in real trials. Cohort assignment and dose info on Day 0. Sentinel review on Day 2. DLT observations after Day 7. SRC decision after Day 14. Protocol deviations throughout. The simulation generates this as end state data which is realistic for analytical purposes but hides the staged data entry pattern. Parked for design review next session. Three options to consider Option A keep as is Option B split into temporal sub instruments Option C keep one instrument with documentation.
+
+### Next milestone
+Resume Section 7 once temporal design question is resolved. Complete make_d3_record function then Section 8 loop and Section 9 CSV export. Then move to D4 PK sampling which is the most important instrument for the entire trial because it produces the PK curves that drive the Power BI dashboard.
+
+---
