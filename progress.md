@@ -688,3 +688,21 @@ Four instruments built out of eight total.
 Build simulate_d4.py for the PK sampling instrument. D4 is the most important instrument for the entire trial because it produces the concentration time curves that anchor the entire PK analysis and the Power BI  dashboard. D4 introduces the repeating instrument pattern because each Randomised volunteer has 8 PK timepoint records SCR DOSING T30M T1H T2H T4H T8H T24H T48H D7. 
 
 ---
+## 2026-05-16 — Event grid updated for D3a D3b split — SRC Review event added
+
+### What was decided
+After splitting D3 into D3a Dose Assignment and D3b Safety Review the event grid needed updating to reflect when each instrument actually fires. Added a new event called SRC Review at Day 21 offset to capture when the Safety Review Committee formally meets and signs off on dose escalation decisions. D3a fires at the Day 0 Dosing event. D3b fires only at the new SRC Review event with sentinel review fields filled retrospectively from Day 2 notes.
+
+### The complete event grid now has 11 events
+Screening Day -14, Day 0 Dosing, PK T+30min, PK T+1h, PK T+2h, PK T+4h, PK T+8h, PK T+24h, PK T+48h, Day 7 follow up, SRC Review Day 21.
+
+### The instrument to event mapping
+D1 and D2 fire at Screening only. D3a fires at Day 0 Dosing only. D3b fires at SRC Review only. D4 PK Sampling fires at all 8 PK timepoints plus Day 7 final sample. D5 Safety Labs fires at T+48h for sentinel review plus Day 7 follow up. D6 and D7 fire at Day 7.
+
+### Design rationale for D3b at SRC Review only
+Considered mapping D3b to multiple events which would produce multiple D3b records per volunteer. Rejected because one record per volunteer keeps the data clean and matches what the Python simulation already produces. Sentinel review data is retrospectively recorded at the SRC Review event which mirrors how real clinical data managers complete safety review forms at the formal decision point. The two sentinel specific fields use branching logic so they only display for actual sentinels.
+
+### Next milestone
+Build simulate_d4.py for the PK sampling instrument. D4 will be the first repeating instrument because each Randomised volunteer has 9 PK timepoint records across the events T+30min through D7. This introduces the redcap_repeat_instance column and the repeating measures pattern that drives the entire pharmacokinetic analysis.
+
+---
