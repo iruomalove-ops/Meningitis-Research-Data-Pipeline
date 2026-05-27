@@ -272,3 +272,30 @@ for a in assignments:
         for key, value in test_reserve.items():
             print(f"  {key}: {value}")
         break
+# ==========================================
+# SECTION 8: LOOP THROUGH ASSIGNMENTS
+# ==========================================
+
+all_d3a_records = []
+
+for assignment in assignments:
+    d3a_record = make_d3a_record(assignment)
+    all_d3a_records.append(d3a_record)
+
+# Verification
+print(f"\nD3a records generated:")
+print(f"  Total: {len(all_d3a_records)}")
+randomised_count = sum(1 for r in all_d3a_records if r["enrolment_status"] == "Randomised")
+reserve_count = sum(1 for r in all_d3a_records if r["enrolment_status"] == "Reserve")
+print(f"  Randomised: {randomised_count}")
+print(f"  Reserve: {reserve_count}")
+# ==========================================
+# SECTION 9: EXPORT TO CSV
+# ==========================================
+
+with open("d3a_dose_assignment.csv", mode="w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(f, fieldnames=list(d3a_template.keys()))
+    writer.writeheader()
+    writer.writerows(all_d3a_records)
+
+print(f"\nD3a records saved to d3a_dose_assignment.csv")

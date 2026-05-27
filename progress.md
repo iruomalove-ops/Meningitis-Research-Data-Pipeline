@@ -626,3 +626,34 @@ CRF design needs to respect the temporal flow of data capture. Fields that get f
 Complete simulate_d3a.py with sections 7 8 and 9. Then build simulate_d3b.py from scratch following the same architectural pattern. After both are working continue to D4 the PK sampling instrument which is the most important data driver for the entire trial and will produce the dose response curves that anchor the Power BI dashboard.
 
 ---
+## 2026-05-16 — simulate_d3a.py complete — 28 dose assignment records generated
+
+### What was built
+Completed simulate_d3a.py through all 9 sections. The script reads the D2 demographics CSV stratifies volunteers into 3 health based piles performs stratified block randomisation across 3 dose cohorts identifies leftover volunteers as reserves and exports a complete D3a CSV with dose assignment data for all 28 eligible volunteers.
+
+### The complete pipeline now produces three CSVs from one starting seed
+- d1_eligibility.csv with 100 screened volunteers and eligibility outcomes
+- d2_demographics_and_medical_history.csv with 28 records for eligible volunteers
+- d3a_dose_assignment.csv with 28 records of which 18 are Randomised and 10 are Reserve
+
+### Architectural patterns locked in
+- record_id flows through all instruments providing referential integrity
+- Random seed 42 in simulate_d1 and simulate_d2 ensures reproducible data
+- Stratified block randomisation distributes 1 Excellent plus 2 Standard plus 3 Family History per cohort exactly matching the 9 needed and using all available Excellent volunteers
+- Reserves emerge naturally as the leftover Standard volunteers from the overrepresented stratum
+- Sentinel selection is the 2 first volunteers of each cohort by enrolment order Position 1 is the Excellent volunteer Position 2 is one of the Standard volunteers
+
+### Python concepts demonstrated
+random sample random shuffle list pop with index zero list extend enumerate with start argument ternary expressions nested for loops sum with generator expressions datetime strptime and strftime timedelta dictionary based lookup using d1_weights to fetch weight data from D1 conditional return statements for Randomised versus Reserve handling
+
+### Output data quality
+- Each Randomised volunteer has cohort 1 2 or 3 with full dose information batch number expiry and PI signoff
+- Each Reserve volunteer has empty cohort fields and enrolment_status equals Reserve
+- 6 sentinels are flagged is_sentinel equals 1 across the 3 cohorts
+- dose_per_kg auto calculated from planned_dose_mg and weight_kg pulled from D1
+- imp_batch follows cohort specific format DEX-P1-2MG-L01 DEX-P1-4MG-L01 DEX-P1-8MG-L01
+
+### Next milestone
+Build simulate_d3b.py from scratch following the same architectural pattern. D3b will read d3a_dose_assignment.csv filter to Randomised volunteers only and generate the 14 field safety review and SRC escalation records for the 18 dosed volunteers. After D3b is complete move on to simulate_d4.py which generates PK sampling records and is the most important data driver for the entire trial because it produces the concentration time curves that anchor the Power BI dashboard.
+
+---
