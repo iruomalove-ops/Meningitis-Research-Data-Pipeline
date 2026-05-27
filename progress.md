@@ -599,3 +599,30 @@ While building Section 7 surfaced a real clinical question about temporal realit
 Resume Section 7 once temporal design question is resolved. Complete make_d3_record function then Section 8 loop and Section 9 CSV export. Then move to D4 PK sampling which is the most important instrument for the entire trial because it produces the PK curves that drive the Power BI dashboard.
 
 ---
+## 2026-05-16 — D3 split into D3a and D3b for temporal accuracy
+
+### What was decided
+Split the D3 dose escalation instrument into two separate instruments to respect the temporal reality of how clinical trial data actually gets captured. The original single D3 instrument tried to hold data points that get filled at completely different times across multiple weeks of trial activity which created confusion about when to fill each field. The split solves this by separating Day 0 dosing decisions from the Day 2 through Day 21 safety review and escalation decisions.
+
+### D3a Dose Assignment and Administration
+Eleven fields. Day 0 instrument. All 28 eligible volunteers receive a record including the 10 Reserves. Captures cohort assignment cohort position sentinel status cohort opening date planned dose dose per kilogram IMP batch IMP expiry and PI dosing sign off. Reserves receive a record with cohort fields empty.
+
+### D3b Safety Review and SRC Escalation
+Fourteen fields. Day 2 through Day 21 instrument. Only the 18 Randomised volunteers receive a record because Reserves are never dosed and have no safety follow up to record. Captures sentinel 48 hour review DLT observation SRC escalation decision protocol deviations and PI escalation sign off. Six fields use branching logic.
+
+### Branching logic in D3b
+The branching rules respect the conditional nature of clinical observations.
+- sentinel_48h_pass and sentinel_review_date only appear if D3a is_sentinel equals 1
+- dlt_description only appears if dlt_observed equals 1
+- deviation_details deviation_reported and deviation_ethics only appear if deviation_any equals 1
+
+### Field removed and deferred for later work
+The cohort_pk_complete field was removed from D3b during the split because it represents a different concept than escalation decisions. PK completion is operational lab data about whether all 8 PK timepoints were successfully collected for each volunteer. This is naturally derivable from D4 PK sampling data by counting records per volunteer. Capturing it as a form field is redundant and risks data disagreement with the actual D4 records. Future implementation will be either a SQL view a Power BI calculated measure or a separate cohort summary instrument. Decision deferred to a later milestone after D4 is built and we have actual PK records to derive from.
+
+### Architectural lesson
+CRF design needs to respect the temporal flow of data capture. Fields that get filled at the same time and in the same context belong in the same instrument. Fields that get filled weeks apart belong in separate instruments even if they cover related concepts. The D3 split is a small example of a much bigger discipline that real clinical data managers practice constantly.
+
+### Next milestone
+Complete simulate_d3a.py with sections 7 8 and 9. Then build simulate_d3b.py from scratch following the same architectural pattern. After both are working continue to D4 the PK sampling instrument which is the most important data driver for the entire trial and will produce the dose response curves that anchor the Power BI dashboard.
+
+---

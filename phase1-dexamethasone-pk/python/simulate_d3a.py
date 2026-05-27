@@ -1,7 +1,9 @@
 """
-simulate_d3.py
-Generates simulated Phase 1 trial data for the Dexamethasone Dose Escalation instrument (D3).
-Processes eligible volunteers from D2 into 3 stratified dosing cohorts with sentinel pairs.
+simulate_d3a.py
+Generates simulated Phase 1 Dose Assignment records (D3a).
+Day 0 instrument capturing cohort assignment and dosing details for all eligible volunteers.
+Reserves receive a record but with empty cohort fields.
+Safety review and SRC escalation captured separately in simulate_d3b.py.
 """
 
 import random
@@ -30,7 +32,8 @@ COHORT_DATES = {
 }
 
 # D3 schema template - all 22 D3 fields plus record_id and enrolment_status
-d3_template = {
+# D3a schema template - Dose Assignment fields only
+d3a_template = {
     "record_id": "",
     "enrolment_status": "",
     "cohort": "",
@@ -41,20 +44,7 @@ d3_template = {
     "dose_per_kg": 0.0,
     "imp_batch": "",
     "imp_expiry": "2028-05-01",
-    "sentinel_48h_pass": "",
-    "sentinel_review_date": "",
-    "dlt_observed": "",
-    "dlt_description": "",
-    "cohort_pk_complete": "",
-    "src_meeting_date": "",
-    "src_decision": "",
-    "src_rationale": "",
-    "src_signed": "",
-    "deviation_any": "",
-    "deviation_details": "",
-    "deviation_reported": "",
-    "deviation_ethics": "",
-    "pi_escalation_signoff": ""
+    "pi_dosing_signoff": ""
 }
 # ==========================================
 # SECTION 2: LOAD D2 DATA AND STRATIFY
@@ -221,3 +211,64 @@ with open("d1_eligibility.csv", mode="r", newline="", encoding="utf-8") as f:
         d1_weights[row["record_id"]] = float(row["weight_kg"])
 
 print(f"\nD1 weight lookup loaded: {len(d1_weights)} records")
+def make_d3a_record(assignment):
+    
+    # Handle Reserve volunteers - mostly empty record
+    if assignment["enrolment_status"] == "Reserve":
+        return {
+            "record_id": assignment["record_id"],
+            "enrolment_status": "Reserve",
+            "cohort": "",
+            "cohort_position": "",
+            "is_sentinel": 0,
+            "cohort_open_date": "",
+            "planned_dose_mg": "",
+            "dose_per_kg": "",
+            "imp_batch": "",
+            "imp_expiry": "",
+            "pi_dosing_signoff": ""
+        }
+    
+    # Below this line - Randomised volunteers only
+    
+    # Pull cohort metadata from COHORT_SPECS
+    cohort_num = assignment["cohort"]
+    cohort_spec = COHORT_SPECS[cohort_num]
+    cohort_open_date = COHORT_DATES[cohort_num]
+    
+    # Pull weight from D1 lookup, calculate dose per kg
+    weight_kg = d1_weights[assignment["record_id"]]
+    planned_dose_mg = cohort_spec["dose_mg"]
+    dose_per_kg = round(planned_dose_mg / weight_kg, 4)
+    
+    # PI dosing sign-off
+    pi_dosing_signoff = random.choice(["NMC", "TLO", "SJM"])
+    
+    # Build the complete D3a record
+    return {
+        "record_id": assignment["record_id"],
+        "enrolment_status": assignment["enrolment_status"],
+        "cohort": cohort_num,
+        "cohort_position": assignment["cohort_position"],
+        "is_sentinel": assignment["is_sentinel"],
+        "cohort_open_date": cohort_open_date,
+        "planned_dose_mg": planned_dose_mg,
+        "dose_per_kg": dose_per_kg,
+        "imp_batch": cohort_spec["batch"],
+        "imp_expiry": "2028-05-01",
+        "pi_dosing_signoff": pi_dosing_signoff
+    }
+# Quick test - build one Randomised record and one Reserve record
+print(f"\n--- Testing make_d3a_record ---")
+print(f"\nRandomised test:")
+test_randomised = make_d3a_record(assignments[0])
+for key, value in test_randomised.items():
+    print(f"  {key}: {value}")
+
+print(f"\nReserve test:")
+for a in assignments:
+    if a["enrolment_status"] == "Reserve":
+        test_reserve = make_d3a_record(a)
+        for key, value in test_reserve.items():
+            print(f"  {key}: {value}")
+        break
