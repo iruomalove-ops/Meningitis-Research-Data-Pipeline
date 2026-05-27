@@ -657,3 +657,34 @@ random sample random shuffle list pop with index zero list extend enumerate with
 Build simulate_d3b.py from scratch following the same architectural pattern. D3b will read d3a_dose_assignment.csv filter to Randomised volunteers only and generate the 14 field safety review and SRC escalation records for the 18 dosed volunteers. After D3b is complete move on to simulate_d4.py which generates PK sampling records and is the most important data driver for the entire trial because it produces the concentration time curves that anchor the Power BI dashboard.
 
 ---
+## 2026-05-16 — simulate_d3b.py complete — 18 safety review records generated
+
+### What was built
+Completed simulate_d3b.py from scratch in six sections. The script reads d3a_dose_assignment.csv filters to the 18 Randomised volunteers and generates the safety follow up and SRC escalation data for each one. Reserves are correctly excluded because they were never dosed and have no safety follow up data to record.
+
+### How D3b differs from D3a architecturally
+D3a captures dosing decisions at Day 0 for all 28 eligible volunteers including Reserves. D3b captures post dose safety outcomes across Day 2 through Day 21 for the 18 dosed volunteers only. 
+
+### Clinical logic implemented in D3b
+- Sentinel 48 hour review fields populated only for the 6 sentinel volunteers based on is_sentinel value from D3a
+- Sentinel review date calculated as cohort_open_date plus 2 days using datetime strptime and strftime
+- DLT observed at a 5 percent rate with realistic CTCAE Grade 3 narrative descriptions when positive
+- SRC meeting date calculated as cohort_open_date plus 21 days
+- SRC decision driven by DLT outcome escalate to next dose if no DLT or repeat current dose if DLT observed
+- Protocol deviations at a 10 percent rate with realistic narrative descriptions and reporting fields
+- PI escalation sign off randomly selected from the three site investigators
+
+### Cross instrument data flow demonstrated
+D3b reads from D3a CSV and uses record_id to link back. Cohort_open_date from D3a drives sentinel_review_date and src_meeting_date in D3b through timedelta arithmetic. This is the first instrument that reads its parent record data and performs calculations across that linkage. Establishes the pattern for D4 D5 D6 D7 which will all read upstream data.
+
+### Complete pipeline status now
+Four instruments built out of eight total.
+- simulate_d1.py 100 screened records eligibility outcomes
+- simulate_d2.py 28 eligible records demographics and medical history
+- simulate_d3a.py 28 dose assignment records 18 Randomised plus 10 Reserve
+- simulate_d3b.py 18 safety review and SRC escalation records
+
+### Next milestone
+Build simulate_d4.py for the PK sampling instrument. D4 is the most important instrument for the entire trial because it produces the concentration time curves that anchor the entire PK analysis and the Power BI  dashboard. D4 introduces the repeating instrument pattern because each Randomised volunteer has 8 PK timepoint records SCR DOSING T30M T1H T2H T4H T8H T24H T48H D7. 
+
+---

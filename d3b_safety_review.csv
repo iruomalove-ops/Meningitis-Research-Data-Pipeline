@@ -1,0 +1,19 @@
+record_id,sentinel_48h_pass,sentinel_review_date,dlt_observed,dlt_description,src_meeting_date,src_decision,src_rationale,src_signed,deviation_any,deviation_details,deviation_reported,deviation_ethics,pi_escalation_signoff
+ZA-CPT-P1-064,1,2025-05-21,0,,2025-06-09,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,TLO
+ZA-CPT-P1-078,1,2025-05-21,0,,2025-06-09,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,SJM
+ZA-CPT-P1-027,,,0,,2025-06-09,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,TLO
+ZA-CPT-P1-072,,,0,,2025-06-09,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,TLO
+ZA-CPT-P1-084,,,0,,2025-06-09,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,SJM
+ZA-CPT-P1-057,,,0,,2025-06-09,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,NMC
+ZA-CPT-P1-062,1,2025-06-11,0,,2025-06-30,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,SJM
+ZA-CPT-P1-056,1,2025-06-11,0,,2025-06-30,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,NMC
+ZA-CPT-P1-074,,,0,,2025-06-30,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,NMC
+ZA-CPT-P1-059,,,0,,2025-06-30,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,NMC
+ZA-CPT-P1-085,,,0,,2025-06-30,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,NMC
+ZA-CPT-P1-018,,,0,,2025-06-30,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,1,"Vital signs check missed at T+1h timepoint, captured at T+1h15min instead",1,1,TLO
+ZA-CPT-P1-080,1,2025-07-02,0,,2025-07-21,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,SJM
+ZA-CPT-P1-100,1,2025-07-02,0,,2025-07-21,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,SJM
+ZA-CPT-P1-010,,,0,,2025-07-21,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,NMC
+ZA-CPT-P1-045,,,0,,2025-07-21,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,SJM
+ZA-CPT-P1-098,,,0,,2025-07-21,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,TLO
+ZA-CPT-P1-050,,,0,,2025-07-21,1,No DLTs observed. PK profile within expected range. SRC approves escalation to next dose level.,1,0,,,,TLO
