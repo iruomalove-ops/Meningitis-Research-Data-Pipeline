@@ -706,3 +706,47 @@ Considered mapping D3b to multiple events which would produce multiple D3b recor
 Build simulate_d4.py for the PK sampling instrument. D4 will be the first repeating instrument because each Randomised volunteer has 9 PK timepoint records across the events T+30min through D7. This introduces the redcap_repeat_instance column and the repeating measures pattern that drives the entire pharmacokinetic analysis.
 
 ---
+## 2026-05-17 — D4 PK sampling fully planned — IV one-compartment model locked in
+
+### What was decided in this session
+Completed the full design plan for D4 the PK sampling instrument before writing any simulation code. Three planning buckets resolved: the pharmacokinetic science, the repeating-instrument structure, and the field mapping against the existing REDCap instrument.
+
+### The pharmacokinetic science
+Chose a real one-compartment PK model over a faked rise-and-fall shape because portfolio credibility depends on the science being authentic and the PK curve is where clinical domain knowledge becomes visible in the data.
+
+Chose IV dosing rather than oral. Reasoning is that this is a safety study not an absorption study. IV gives 100 percent bioavailability and removes between-person absorption variability so any differences in exposure come from elimination and distribution not from gut absorption. This is correct first-in-human safety sequencing. Oral absorption can be studied later once safety is established.
+
+IV dosing removes the absorption phase so the model simplifies from the two-exponential oral form to a single decay equation C of t equals D over V times e to the power minus ke times t. Concentration peaks instantly at dosing then decays.
+
+### PK constants locked in with literature support
+Half-life t-half equals 4 hours. Supported by StatPearls NIH reference giving mean terminal half-life of 4 hours and a pediatric PK review noting 4 to 9 hours for CYP3A4 metabolism. Elimination rate constant ke equals 0.693 divided by 4 equals 0.173 per hour.
+
+Volume of distribution V equals 1.0 litres per kilogram of body weight. Supported by published weight-normalized values ranging 0.41 to 1.0 L per kg in healthy adults. V is computed per volunteer from their D1 weight so curves differ between volunteers naturally through real body weight differences. Lighter volunteers reach higher peaks heavier volunteers reach lower peaks. This is genuine physiology not artificial noise.in future if they are any discripancies it could be traced right back to this origin.
+
+Output converted to nanograms per millilitre by multiplying mg per litre by 1000. Plus or minus 5 percent assay measurement noise added to each value so plotted points scatter realistically around the model curve like real lab data.
+
+### Scientific coherence with eligibility design
+Confirmed that dexamethasone is metabolized by CYP3A4 which is exactly why D1 exclusion criterion e1_cyp3a4 screens out CYP3A4 modulators. The eligibility logic and the PK model are scientifically consistent. Anyone on a CYP3A4 inhibitor or inducer would have a distorted elimination curve.
+
+### The repeating-instrument structure
+D4 is the first repeating instrument. Each volunteer has 8 PK timepoint records not one. The redcap_repeat_instance column distinguishes the 8 draws for the same record_id. Together record_id and redcap_repeat_instance uniquely identify each row. This creates a one-to-many relationship where one D1 or D3a record matches 8 D4 rows.
+
+Eight timepoints confirmed matching the existing REDCap dropdown: Pre-dose T0, 30 minutes, 1 hour, 2 hours, 4 hours, 8 hours, 24 hours, 48 hours. T0 is the pre-dose baseline and reads BLQ since no drug is on board. Dropped the Day 7 PK draw because with a 4 hour half-life the drug is fully cleared by 48 hours so a Day 7 sample would add no information. Day 7 remains a safety follow-up visit for adverse events and labs not PK.
+
+Dropped the artificial dropout idea entirely. That concept belonged to the earlier 20-volunteer scenario. With 18 clean randomised volunteers and 10 separate reserves there is no need to force missing data. All 18 volunteers get all 8 timepoints giving 144 PK records total.
+
+### LLOQ decision
+Lower limit of quantification set at 0.5 ng per mL rather than 1.0. Reasoning is that this safety-focused PK wants the most sensitive assay so late low concentrations can be measured and confirmed declining toward zero rather than hidden behind a BLQ flag. The goal is confirming safe clearance in all groups not characterising potency. At 0.5 the 24 hour timepoint stays quantifiable for essentially all cohorts and the 48 hour timepoint correctly goes BLQ everywhere confirming clearance. T0 always BLQ as pre-dose baseline.
+
+### REDCap edit plan for D4 timing fields
+The original D4 had three fragmented timing fields: sample_date holding only the date, scheduled_time holding only HH:MM, and actual_time holding only HH:MM. The problem with this split is that time was not a directly calculable variable. To work out elapsed time since dosing for the PK curve you would have to stitch the separate date and time fields back together first, which is awkward and error prone.
+
+Collapsing into two complete datetime fields solves this. scheduled_datetime and actual_datetime each hold a full date and time to the minute in one field. Elapsed time since dosing then becomes a simple subtraction of two complete timestamps with no reassembly needed, which makes the PK time axis a genuinely calculable variable rather than something pieced together from fragments.
+
+### Field mapping confirmed
+Dose stays in D3a and weight stays in D1 joined to D4 via record_id rather than duplicated. PK parameters Cmax Tmax AUC clearance are derived in the analysis layer not stored in D4 following single source of truth. D4 captures the irreducible requirement which is concentration paired with time. sample_collected always Yes since no dropouts so the missed_reason branch stays empty. Logistics fields filled with realistic clinical defaults. plasma_concentration computed from the model. blq derived against the 0.5 threshold.
+
+### Next milestone
+Make the D4 timing field edits in REDCap. Regenerate the master data dictionary. Then map the D4 build into a section list and build simulate_d4.py section by section. D4 introduces the nested loop generating 8 timepoint rows per volunteer and the exponential decay calculation for plasma concentration.
+
+---
