@@ -750,3 +750,24 @@ Dose stays in D3a and weight stays in D1 joined to D4 via record_id rather than 
 Make the D4 timing field edits in REDCap. Regenerate the master data dictionary. Then map the D4 build into a section list and build simulate_d4.py section by section. D4 introduces the nested loop generating 8 timepoint rows per volunteer and the exponential decay calculation for plasma concentration.
 
 ---
+## 2026-05-17 — D4 timing fields edited and verified — planning complete
+
+### What was changed in REDCap
+Collapsed the three fragmented D4 timing fields into complete datetime fields so that time becomes a directly calculable variable rather than something reassembled from separate date and time pieces. Removed sample_date scheduled_time and actual_time. Added scheduled_datetime and actual_datetime both as Text Box fields with datetime_ymd validation for to-the-minute precision. Also updated centrifuge_time to a datetime format for consistency with the other timing fields.
+
+### Why datetime fields matter
+With the old split design working out elapsed time since dosing meant stitching a separate date field back together with a separate time field before any arithmetic was possible. The complete datetime fields make elapsed time a simple subtraction of two timestamps which is what the PK time axis calculation actually needs. Keeping scheduled and actual as two separate datetime fields also preserves the sampling window deviation story since the difference between them shows how far each draw drifted from plan.
+
+### Verification against the live instrument
+Downloaded the D4 data dictionary from REDCap and confirmed the edit landed correctly. The three old fields are gone. The two new fields exist with the exact variable names scheduled_datetime and actual_datetime. Both carry datetime_ymd validation. Field count is now 16 down from 17 as planned. The variable names are confirmed so the simulation can reference them as dictionary keys with no risk of a column name mismatch when the CSV joins downstream.
+
+### Final confirmed D4 field list in order
+record_id and redcap_repeat_instance as identifiers then timepoint scheduled_datetime actual_datetime sample_collected missed_reason cannula_site sample_volume tube_type centrifuge_time plasma_aliquoted storage_temp shipped plasma_concentration blq assay_date sample_notes.
+
+### Status
+D4 planning is now fully complete. Science locked IV one-compartment model with confirmed constants. Structure locked repeating instrument 18 volunteers times 8 timepoints equals 144 records no dropouts. Field list locked and verified against the live REDCap form. Ready to build simulate_d4.py.
+
+### Next milestone
+Map simulate_d4.py into a section plan then build it section by section. The two genuinely new pieces are the nested loop generating 8 timepoint rows per volunteer and the exponential decay calculation for plasma concentration. Everything else reuses established patterns.
+
+---
