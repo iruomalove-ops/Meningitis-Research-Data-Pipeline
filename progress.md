@@ -771,3 +771,46 @@ D4 planning is now fully complete. Science locked IV one-compartment model with 
 Map simulate_d4.py into a section plan then build it section by section. The two genuinely new pieces are the nested loop generating 8 timepoint rows per volunteer and the exponential decay calculation for plasma concentration. Everything else reuses established patterns.
 
 ---
+
+## 2026-05-31 — simulate_d4.py complete — 144 PK sampling records generated
+
+### What was built
+Completed simulate_d4.py in seven sections. The script reads d3a_dose_assignment.csv to find the 18 Randomised volunteers, pulls each volunteer's weight from d1_eligibility.csv, then generates 8 PK timepoint records per volunteer using an IV one-compartment pharmacokinetic model. Output is 144 records saved to d4_pk_sampling.csv with full referential integrity back to D1 and D3a via record_id.
+
+### The pharmacokinetic model implemented
+IV one-compartment model with the equation C(t) = (D/V) * exp(-ke*t). KE = 0.173 per hour derived from a 4-hour plasma half-life. V is computed per volunteer as 1.0 L/kg times their body weight from D1, so the volume of distribution varies between volunteers based on real measured weight. The dose D comes from D3a per cohort. Concentration output is in ng/mL after a multiplicative conversion from mg/L. Plus or minus 5 percent multiplicative assay noise applied to simulate LC-MS measurement variability. Pre-dose T0 forced to zero. Below-limit-of-quantification rule applied at LLOQ = 0.5 ng/mL.
+
+### Why this matters scientifically
+The curve shape is now genuine pharmacology. Concentrations rise instantly to peak at dosing, decay exponentially over the 48 hours, and fall to BLQ at the tail. Light volunteers reach higher peaks than heavy volunteers from the same dose because V scales with weight, and the 8mg cohort reaches roughly four times the peak of the 2mg cohort because dose scales linearly. The Power BI dashboard will eventually show three distinct curves separated by cohort dose, with realistic scatter from assay noise rather than implausibly smooth lines.
+
+### First repeating instrument in the project
+D4 is structurally different from D1, D2, D3a, D3b. Each volunteer has 8 records not 1, distinguished by redcap_repeat_instance counting 1 through 8 within each volunteer. The nested loop pattern generates these by looping volunteers on the outside and timepoints on the inside, with an independent repeat_instance counter that resets at the start of each volunteer.
+
+### Defensive coupling decision
+Initial draft of the nested loop used enumerate to produce a single position variable doing double duty as both the redcap_repeat_instance value and an implicit assumption that timepoint codes matched their list position. Caught this as a silent coupling risk before pasting and refactored to compute the two variables from independent sources. redcap_repeat_instance now comes from a manually incremented counter that resets per volunteer. timepoint code still comes from the TIMEPOINTS dictionary. The values are currently identical but are now structurally independent, so any future change to TIMEPOINTS order or content cannot silently mis-label rows. Comment in the section explains the discipline for future readers.
+
+### New Python concepts learned this session
+- math.exp for the exponential decay calculation
+- random.uniform for flat-distribution random factors in the noise model
+- multiplicative noise applied to true concentration to produce measured concentration
+- datetime.strptime to parse a constructed date plus time string into a datetime object
+- f-string formatting with the :02d width specifier for zero-padded integers
+- timedelta arithmetic with hours, minutes, days
+- the difference between additive and multiplicative noise models in measurement science
+- the "true vs measured" distinction in PK simulation
+
+### Verification on the output
+All 18 volunteers have exactly 8 records each. T0 is 18/18 BLQ as expected pre-dose. 48 hours is 18/18 BLQ as expected post-elimination. Middle timepoints show plasma concentrations with realistic scatter from the assay noise. 24 hours shows partial BLQ depending on dose and weight which matches the LLOQ design.
+
+### Complete pipeline status
+Five simulation instruments built out of eight total.
+- simulate_d1.py 100 screened records
+- simulate_d2.py 28 eligible records
+- simulate_d3a.py 28 dose assignment records (18 Randomised + 10 Reserve)
+- simulate_d3b.py 18 safety review records
+- simulate_d4.py 144 PK sampling records
+
+### Next milestone
+Build simulate_d5.py for the safety labs and vitals instrument. D5 is the second repeating instrument because each volunteer has labs and vitals captured at multiple events (T+48h sentinel review for sentinels, Day 7 follow-up for all). Will reuse the nested loop pattern from D4 but with conditional logic for which volunteers fire at which events.
+
+---
