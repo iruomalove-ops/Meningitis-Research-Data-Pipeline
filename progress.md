@@ -814,3 +814,45 @@ Five simulation instruments built out of eight total.
 Build simulate_d5.py for the safety labs and vitals instrument. D5 is the second repeating instrument because each volunteer has labs and vitals captured at multiple events (T+48h sentinel review for sentinels, Day 7 follow-up for all). Will reuse the nested loop pattern from D4 but with conditional logic for which volunteers fire at which events.
 
 ---
+## 2026-06-02 — D5 architectural cleanup — event-name branching and timepoint field removal
+
+### What was done this session
+Diagnosed and resolved a self-referencing branching bug in D5, replaced the broken custom-timepoint approach with event-name branching, removed the redundant d5_visit_timepoint field, and tested the form across all relevant events to confirm correct conditional rendering.
+
+### The bug that surfaced first
+The d5_visit_timepoint field had branching logic referencing its own value: [d5_visit_timepoint] = '1' or '2' or '7' or '8' or '9' or '10'. This is a logical paradox where the field needed a value to be visible but could not receive a value because it was hidden. REDCap parses this as syntactically valid but it can never satisfy itself. The field rendered in Designer but never in data entry across any event. Worse the branching referenced codes 7 8 9 10 which were not in the current dropdown which only contained 1 through 6. Stale branching pointing at codes that no longer existed.
+
+### The design tension this exposed
+D5 captures both vital signs and lab results. Vitals get taken at most events (screening dosing day every PK timepoint and follow up). Labs are only drawn 3 times in the trial. With both in one form mapped to all vitals events the user would see a long stretch of empty lab fields at vitals-only events which is a real data entry burden and clarity problem. Empty for a reason looks identical to empty by mistake. The original d5_visit_timepoint field was an attempt to solve this by conditionally hiding lab fields at vitals-only events but the implementation was wrong.
+
+### Three paths considered
+Path one was splitting D5 into D5 Vitals and D6 Labs with renumbering downstream. Clean for data entry but added another instrument split alongside D3a and D3b. Concern about too many split instruments in the project structure becoming a confusing pattern. Path two was keeping D5 together and using event-name branching to conditionally hide labs at non-labs events. Single instrument cleaner conceptually but event-name branching has known fragility risks. Path three was keeping everything together with no branching and accepting empty fields with documentation. Rejected as relying on training to compensate for form design which creates data quality problems.
+
+### Path chosen and why
+Path two. Event-name branching on the lab fields. The deliberate choice was to demonstrate problem-solving depth rather than defaulting to the same split-the-form pattern used for D3. A portfolio showing both splitting (D3a/D3b temporal split) and branching (D5 event-name conditional rendering) demonstrates judgement about when each tool is right. Splitting fits temporal separation where data is collected weeks apart. Branching fits conceptual unity where data shares a clinical encounter but only some pieces apply at any given visit. D5 fits the latter pattern because vitals and labs at the same visit are part of one nursing encounter and should not be artificially separated into two instruments.
+
+### Implementation details
+Captured exact unique event names from Define Events page before writing any branching to avoid typos. Three labs events screening_arm_1 pk_t48h_arm_1 day_7_followup_arm_1. Applied the expression [event-name] = "screening_arm_1" or [event-name] = "pk_t48h_arm_1" or [event-name] = "day_7_followup_arm_1" to every lab field across the four lab panels haematology liver function renal electrolytes glucose. Left vital signs fields unbranched so they remain visible at every event. Left investigator review section unbranched so the clinical signature applies to every visit whether vitals only or vitals plus labs. For lab fields that had pre-existing branching for clinical reasons composed the new event-name expression with the existing condition using AND so both must be true for the field to show preserving the original clinical logic.
+
+### Field label discipline
+Renamed the abnormalities field from "Any clinically significant lab abnormality" to a label that applies universally across both vitals-only and labs events. Since the form now serves both visit contexts every field label must read cleanly in both. The original lab-specific phrasing would have confused data entry at vitals-only events.
+
+### Field removed
+Deleted d5_visit_timepoint entirely once event-name branching took over its job. The field was duplicating what REDCap's redcap_event_name already tracks natively which is a single-source-of-truth violation. With event-name branching doing the visibility work the custom timepoint field served no remaining purpose.
+
+### Testing confirmed
+Walked the form through every event in the grid. At screening pk_t48h and day_7_followup all lab fields visible alongside vitals and investigator review. At day_0_dosing all PK observation timepoints and src_review only vitals and investigator review visible lab fields correctly hidden.
+
+### Maintenance contract documented
+D5 lab field branching depends on three unique event names exactly as spelled. If any of screening_arm_1 pk_t48h_arm_1 or day_7_followup_arm_1 are renamed in Define Events the branching breaks silently because the expression will never match a non-existent event name. Future maintenance of these events must include updating the D5 branching expressions in lockstep.
+
+### Architectural lesson worth keeping
+REDCap offers two ways to control field visibility across events. Instrument-to-event mapping turns whole forms on or off at the event level which is the right tool when the entire form does not apply at certain events. Field-level branching on event-name turns individual fields on or off within a form that does fire at all relevant events which is the right tool when only some fields are visit-specific within a form that otherwise applies broadly. D5 needs the second pattern because most of the form applies to every event but the lab subset does not.
+
+### Pipeline status
+Five simulation instruments built. D5 form architecture now clean and tested. simulate_d5.py not yet built. The form is ready for simulation against.
+
+### Next milestone
+Build simulate_d5.py. The repeating instrument pattern from D4 carries forward. Each volunteer gets multiple D5 records one per mapped event. Vitals fields populated at every record. Lab fields populated only at the three labs events screening pk_t48h day_7_followup matching the form's branching logic. The simulation must honour the conditional rendering by leaving lab fields empty at non-labs events not by inventing data the form would not collect.
+
+---
