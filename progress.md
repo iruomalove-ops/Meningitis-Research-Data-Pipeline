@@ -856,3 +856,44 @@ Five simulation instruments built. D5 form architecture now clean and tested. si
 Build simulate_d5.py. The repeating instrument pattern from D4 carries forward. Each volunteer gets multiple D5 records one per mapped event. Vitals fields populated at every record. Lab fields populated only at the three labs events screening pk_t48h day_7_followup matching the form's branching logic. The simulation must honour the conditional rendering by leaving lab fields empty at non-labs events not by inventing data the form would not collect.
 
 ---
+## 2026-06-02 — D5 simulation design locked — Story C clinical narrative with engineered safety signal
+
+### What was decided
+Locked the complete clinical narrative and structural design for simulate_d5.py before any code.narrative-driven simulation . The data tells a coherent Phase 1 dose escalation safety story rather than just generating plausible random values. This is the most ambitious simulation in the projec .
+
+### The clinical narrative locked in
+Eighteen randomised volunteers across three cohorts of six each. D5 fires at three events with labs populated and at the other vitals-event mappings with labs hidden via event-name branching.
+
+At screening every volunteer has labs and vitals drawn for baseline. Two or three volunteers carry incidental abnormalities that did not fail eligibility. One has mildly elevated ALT around 1.2 times upper limit of normal consistent with occasional alcohol use. One young woman has marginal anaemia at the low end of normal range. Possibly one volunteer shows mild dehydration markers including slightly elevated creatinine and upper-normal sodium. These are stable individual baselines that persist across timepoints.
+
+At T+48h drug-related effects appear that scale with cohort dose. The 2mg cohort shows minimal change with slight uptick in glucose slight neutrophil rise and slight potassium drop all within normal range. The 4mg cohort shows clearer effects with glucose nearer upper-normal neutrophil count roughly 50 percent above baseline corresponding lymphopenia and potassium at the lower end of normal. The 8mg cohort shows the most prominent effects with glucose elevations pushing one or two volunteers above upper-normal neutrophilia roughly doubling baseline potassium dropping to low-normal or just below. These are textbook corticosteroid effects. Volunteers with incidental screening findings continue to show those findings.
+
+At Day 7 drug effects have largely resolved. Most values return to near-baseline. Incidental findings remain stable.
+
+The engineered Story finding sits at Day 7 in the 8mg cohort. One specific volunteer selected deterministically using the random seed shows a Day 7 ALT elevation between 80 and 100 U per L falling clearly in CTCAE Grade 1 range above upper limit of normal up to three times ULN. The same volunteer also showed above-cohort-average glucose at T+48h above-cohort-average neutrophilia at T+48h and low-end-of-cohort potassium at T+48h. The narrative tells the story of a high responder volunteer whose Day 7 ALT elevation is biologically coherent with their stronger response to the drug rather than appearing as an isolated unexplained finding.
+
+This is exactly the kind of signal that triggers SRC discussion in a real Phase 1 trial. The investigator review field for this volunteer at Day 7 is flagged Yes for clinically significant abnormality with appropriate narrative documentation.
+
+### Why this narrative serves the portfolio
+The high responder narrative produces a coherent dashboard story. A reviewer can see a pattern across multiple labs across multiple timepoints for the same volunteer and the pattern means something biologically. The alternative surprising-signal narrative would have looked like noise that happened to be designed in rather than a defensible clinical pattern. The chosen approach demonstrates understanding of how dose-related effects manifest progressively in individual responders and how Phase 1 safety monitoring is designed to catch exactly this kind of signal.
+
+### Clinical pharmacology rationale documented
+Dexamethasone is a synthetic corticosteroid. Even a single IV dose produces detectable physiological changes within 24 to 48 hours most of which are transient and resolve by Day 7. The effects depicted are all real and well-documented. Transient glucose rise from insulin antagonism and gluconeogenesis. Transient neutrophilia from demargination effects releasing marginated neutrophils into circulation paired with transient lymphopenia from lymphocyte redistribution. Transient hypokalaemia from mineralocorticoid activity. Subtle late ALT effects when corticosteroid hepatotoxicity occurs from a single dose tending to present as a delayed transaminase elevation rather than an immediate one. Day 7 timing for the engineered ALT finding is biologically plausible.
+
+The hypokalaemia depicted will be modest. A drop from baseline near 4.3 mmol per L to 3.6 mmol per L at the top dose is realistic. Lower than 3.5 mmol per L would not be a typical single-dose finding so the simulation will not produce that.
+
+### Structural design locked
+D5 is a repeating instrument firing at multiple events with field-fill patterns differing by event. The simulation iterates over D5-mapped events for each volunteer. At labs events the lab fields populate. At vitals-only events the lab fields remain empty strings honouring the REDCap branching logic. The investigator review section always populates because that section is unbranched in REDCap.
+
+All 18 randomised volunteers get D5 records at every event D5 is mapped to. Reserves do not get D5 records because they were never dosed.
+
+### Eight-section build plan
+Section 1 configurations and schema template including reference ranges for each lab test and constants identifying narrative roles. Section 2 event configuration list of dictionaries with one boolean flag per event indicating whether labs fire. Section 3 load D3a filter to Randomised same pattern as D4. Section 4 load D1 for demographics and baseline data including sex which affects some reference ranges. Section 5 deterministic selection of the high-responder volunteer and the volunteers carrying incidental findings using the random seed for reproducibility. Section 6 the make_d5_record function with cohort-driven dose response logic individual baseline carryovers and engineered high-responder pattern. Section 7 nested loop generating all records skipping events D5 is not mapped to. Section 8 verification prints and CSV export.
+
+### Estimated effort
+Sections 1 to 4 around 45 minutes. Section 5 short. Section 6 the dense one probably 90 minutes or more because the narrative logic across cohort by event by volunteer narrative role takes careful thought. Sections 7 and 8 around 30 minutes. Total realistic working time across one or two sessions 3 to 4 hours of focused work.
+
+### Next milestone
+Build simulate_d5.py starting with Section 1.
+
+---
