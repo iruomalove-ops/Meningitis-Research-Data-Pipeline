@@ -856,7 +856,7 @@ Five simulation instruments built. D5 form architecture now clean and tested. si
 Build simulate_d5.py. The repeating instrument pattern from D4 carries forward. Each volunteer gets multiple D5 records one per mapped event. Vitals fields populated at every record. Lab fields populated only at the three labs events screening pk_t48h day_7_followup matching the form's branching logic. The simulation must honour the conditional rendering by leaving lab fields empty at non-labs events not by inventing data the form would not collect.
 
 ---
-## 2026-06-02 — D5 simulation design locked — Story C clinical narrative with engineered safety signal
+## 2026-06-02 — D5 simulation design locked 
 
 ### What was decided
 Locked the complete clinical narrative and structural design for simulate_d5.py before any code.narrative-driven simulation . The data tells a coherent Phase 1 dose escalation safety story rather than just generating plausible random values. This is the most ambitious simulation in the projec .
@@ -930,5 +930,46 @@ List comprehensions used heavily for filtering volunteer pools by cohort sentine
 
 ### Next milestone
 Build Section 6 of simulate_d5.py. The make_d5_record function with cohort-driven dose response logic, individual baseline carryovers for the three incidental finding volunteers, and the engineered high-responder pattern including the Day 7 ALT signal. This is the most ambitious section in the entire simulation pipeline. Plan to build it incrementally in four or five sub-blocks. Vitals generation, baseline lab generation, drug effect application at T+48h, Day 7 lab generation with residual effects and the engineered signal, and the investigator review section. Each sub-block testable before moving to the next.
+
+---
+## 2026-06-04 — simulate_d5.py complete — 180 records with engineered safety narrative
+
+### What was built
+Completed simulate_d5.py across all eight sections. Reads d3a_dose_assignment.csv to find the 18 Randomised volunteers and d1_eligibility.csv for weight and sex_at_birth. Generates one D5 record per volunteer per D5-mapped event giving 180 records across 10 events. Three of those events populate the full labs panel and seven populate vitals only honouring the REDCap branching logic. Engineered clinical narrative implements one high responder volunteer in the 8mg cohort plus three incidental findings volunteers carrying baseline abnormalities.
+
+### Engineered narrative cast locked deterministically
+Random seed 42 produces the same cast every run.
+- ZA-CPT-P1-080 high responder. Sentinel in 8mg cohort. Boosted T+48h response across glucose neutrophilia and potassium. Day 7 ALT engineered to 80-100 U/L range falling cleanly in CTCAE Grade 1 territory.
+- ZA-CPT-P1-078 female volunteer carrying marginal anaemia. Persists across all timepoints.
+- ZA-CPT-P1-059 mildly elevated baseline ALT. Persists across timepoints.
+- ZA-CPT-P1-084 dehydration markers at screening with mild creatinine and upper-normal sodium. Resolves modestly by later events.
+
+### Verification output confirms narrative landed correctly
+All 18 volunteers got exactly 10 D5 records each. Lab fields are empty at all 7 vitals-only events and populated at all 3 labs events. High responder Day 7 ALT generated at 86 U/L with abnormal flag set to 1. T+48h dose-scaled effects visible in the cohort means. Glucose rises 5.07 to 5.63 to 6.10 mmol per L across cohorts 1 2 3. Neutrophils rise 5.68 to 7.42 to 8.87 across cohorts 1 2 3 with cohorts 4mg and 8mg crossing the upper limit of normal. Potassium falls 4.22 to 3.85 to 3.73 across cohorts 1 2 3 with the 8mg cohort approaching the lower limit of normal. Clean dose-response signal emerging from the data.
+
+### Notable Python concepts demonstrated in this build
+List comprehensions used heavily in Section 5 for filtering candidate pools by cohort and sex. Sets used to track already-taken record_ids ensuring no volunteer plays two narrative roles. Helper function generate_lab_value defined once and called repeatedly across all four lab panels reducing code duplication. Dictionary copying with dict(d5_template) to avoid mutating the template across function calls. Tuple unpacking with the star operator for passing the engineered ALT range as separate min and max arguments. Multiplier and shift fraction parameters separated cleanly so drug effects multiply baseline values and incidental findings shift within range without mathematically interacting.
+
+### Bugs caught and fixed during the build
+First bug. The sex variable was assumed to live in D2 when it actually lives in D1 as sex_at_birth. The KeyError surfaced this at runtime. Fix collapsed the D1 and D2 loops into a single D1 loop pulling both weight and sex from one CSV read. The lesson is that when a project has multiple data sources it is easy to forget which field lives in which CSV. Checking the actual data dictionary rather than relying on memory is the discipline that prevents this.
+
+Second bug. The sex_at_birth field has three options not two. REDCap codes them 1 male 2 female 3 intersex or indeterminate. Initial HB_RANGE and CREATININE_RANGE dictionaries only defined keys for 1 and 2 causing a KeyError when a code-3 volunteer appeared in the randomised pool. Fix extended both reference range dictionaries to include a key for 3 using a union range covering both male and female bounds. This is the clinically defensible approach when sex-based hormonal profile is indeterminate.
+
+Third bug. An unconditional return record at the wrong indentation level inside make_d5_record caused the function to exit early and VS Code to grey out the unreachable downstream code. The diagnostic skill that resolved it was reading the static analyser greying as a real warning rather than ignoring it. The lesson is that VS Code is telling you something structurally wrong before the code even runs.
+
+### Language audit during finalisation
+Removed internal-planning vocabulary that had leaked into code comments and print statements. Specifically replaced Story C labels with descriptive language because Story A and Story B were paths not taken and the letter naming exposed planning shorthand to a public reader. Discipline going forward. Planning labels live in PROGRESS.md as the journal of how we thought through it. Code and documentation describe what the project is not the planning vocabulary that got us there.
+
+### Pipeline status
+Six simulation instruments built out of seven total. One remaining.
+- simulate_d1.py 100 screened records
+- simulate_d2.py 28 eligible records
+- simulate_d3a.py 28 dose assignment records
+- simulate_d3b.py 18 safety review records
+- simulate_d4.py 144 PK sampling records
+- simulate_d5.py 180 safety labs and vitals records
+
+### Next milestone
+Build simulate_d6.py for the adverse events instrument. D6 captures AEs and SAEs across the trial. The architecture pattern carries forward from D5. Repeating instrument firing at events with conditional logic. The engineered narrative for D6 will include realistic AE rates by cohort consistent with the dexamethasone safety profile. The high responder identified in D5 may also surface in D6 with a related AE to maintain narrative consistency across instruments.
 
 ---
