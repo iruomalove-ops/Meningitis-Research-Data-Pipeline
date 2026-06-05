@@ -897,3 +897,38 @@ Sections 1 to 4 around 45 minutes. Section 5 short. Section 6 the dense one prob
 Build simulate_d5.py starting with Section 1.
 
 ---
+## 2026-06-04 — simulate_d5.py Sections 1 through 5 complete — narrative cast locked in
+
+### What was built
+Completed the configuration setup, event mapping, data loading, and narrative role assignment for simulate_d5.py. Five of the eight planned sections are in place. The simulation has not yet generated any records but the infrastructure that drives the Section 6 record generation is fully established.
+
+### Section 1 configuration locked
+Reference ranges for every lab test defined as module-level constants. Sex-specific ranges for haemoglobin and creatinine keyed by REDCap sex code "1" male "2" female rather than translating to letters at load time. Single vocabulary across the project. Drug effect magnitudes by cohort encoded as multiplicative factors. Glucose rise scales 1.05 1.15 1.30 across the three cohorts. Neutrophil rise scales 1.10 1.50 1.80. Lymphocyte drop scales 0.95 0.80 0.65. Potassium drop scales 0.98 0.93 0.88. Day 7 residual glucose effects modest at 1.00 1.02 1.05. High responder boosts defined separately for the engineered Story C narrative. Random seed locked at 42 for reproducibility. d5_template dictionary captures all 31 fields plus three REDCap structural columns (record_id, redcap_repeat_instance, redcap_event_name).
+
+### Section 2 event configuration
+D5 fires at 10 of 11 events in the event grid. SRC Review excluded entirely because D5 is not mapped there. Each event entry holds the exact unique event name from REDCap, a human label for debug prints, a day offset relative to dosing day, and a boolean labs flag. Three events have labs True (screening_arm_1, pk_t48h_arm_1, day_7_followup_arm_1). Seven events have labs False. The boolean flag is what drives the conditional logic in Section 6.
+
+### Section 3 data loading
+Standard pattern. Load d3a_dose_assignment.csv and filter to Randomised volunteers. 18 volunteers loaded.
+
+### Section 4 demographic data
+D1 provides both weight and sex. Initial attempt looked for sex in D2 which raised a KeyError because sex actually lives in D1 as sex_at_birth. Caught the mistake, corrected by collapsing the lookup into D1 only. One CSV read instead of two. The d1_weights and d1_sex dictionaries both populated from a single pass through D1. 100 records loaded.
+
+### Lesson worth recording from the D2/D1 sex confusion
+In a project with multiple data sources it is easy to forget which field lives in which CSV. The bigger the project gets, the more this risk grows. Two disciplines help. First, when in doubt about a field's location check the actual CSV rather than reasoning from assumed structure. Memory is unreliable across many files. Second, this is exactly the kind of mapping ambiguity the SDTM mapping specification document captures explicitly. Every variable in the SDTM submission has a table entry saying which source field it comes from. The confusion that just happened is a small-scale example of why that mapping document is valuable in real clinical data work.
+
+### Section 5 narrative roles assigned
+Story C cast locked in deterministically because of the random seed. Same volunteers play the same roles every run.
+- ZA-CPT-P1-080 high responder. Sentinel in the 8mg cohort. Carries the strongest dose response at T+48h across glucose, neutrophils, and potassium. Develops Grade 1 ALT elevation at Day 7.
+- ZA-CPT-P1-078 female volunteer with marginal anaemia. Persists across all three timepoints.
+- ZA-CPT-P1-059 mildly elevated baseline ALT around 1.2 times upper limit of normal. Persists across timepoints.
+- ZA-CPT-P1-084 dehydration markers at screening with slightly elevated creatinine and upper-normal sodium. Resolves modestly by Day 7.
+The other 14 randomised volunteers carry no narrative role and receive textbook-normal labs at baseline with dose-scaled effects at T+48h that resolve by Day 7.
+
+### New Python patterns this session
+List comprehensions used heavily for filtering volunteer pools by cohort sentinel status and sex. Sets used for tracking already-taken record_ids to ensure no volunteer plays two narrative roles. The discipline of incremental filtering with running exclusion sets is the cleanest pattern for narrative cast selection from a candidate pool.
+
+### Next milestone
+Build Section 6 of simulate_d5.py. The make_d5_record function with cohort-driven dose response logic, individual baseline carryovers for the three incidental finding volunteers, and the engineered high-responder pattern including the Day 7 ALT signal. This is the most ambitious section in the entire simulation pipeline. Plan to build it incrementally in four or five sub-blocks. Vitals generation, baseline lab generation, drug effect application at T+48h, Day 7 lab generation with residual effects and the engineered signal, and the investigator review section. Each sub-block testable before moving to the next.
+
+---
