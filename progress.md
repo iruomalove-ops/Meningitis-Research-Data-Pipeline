@@ -973,3 +973,39 @@ Six simulation instruments built out of seven total. One remaining.
 Build simulate_d6.py for the adverse events instrument. D6 captures AEs and SAEs across the trial. The architecture pattern carries forward from D5. Repeating instrument firing at events with conditional logic. The engineered narrative for D6 will include realistic AE rates by cohort consistent with the dexamethasone safety profile. The high responder identified in D5 may also surface in D6 with a related AE to maintain narrative consistency across instruments.
 
 ---
+## 2026-06-08 — simulate_d6.py design locked — adverse events with engineered SAE
+
+### What was decided
+Locked the complete design for simulate_d6.py before any code. D6 is the adverse events instrument capturing AEs and SAEs across the trial. The simulation produces a mix of realistic baseline AEs scaling by cohort, the engineered Grade 1 ALT elevation AE matching the D5 finding for the high responder, and one engineered unrelated SAE demonstrating the safety reporting workflow.
+
+### Event mapping confirmed against REDCap
+D6 fires at 5 events in the current event grid: day_0__dosing_arm_1, pk_t8h_arm_1, pk_t24h_arm_1, pk_t48h_arm_1, day_7_followup_arm_1. Confirmed by downloading the instrument designations export from REDCap. D6 correctly does not fire at screening because volunteers are not yet dosed. Does not fire at the early PK timepoints (T+30min through T+4h) because those are brief PK draw visits without substantive clinical assessment.
+
+### Record structure pattern
+At each volunteer-event combination either one placeholder record with ae_any equal to 0 (no AEs to report since last assessment), or one or more AE records with ae_any equal to 1 (one record per AE reported at this assessment). Expected total records approximately 95 to 100 across the trial.
+
+### AE pool 14 terms locked
+Headache, nausea, fatigue, insomnia, feeling jittery or restless, dry mouth, increased appetite, mood change, cannulation site discomfort, mild dizziness, constipation, dyspepsia, vivid dreams, hot flushes. These are realistic dexamethasone single-dose Phase 1 AEs ordered roughly by frequency. The simulation picks from this pool probabilistically with weights favouring the more common terms.
+
+### AE rates scale by cohort
+Overall trial AE rate target 60 to 70 percent of volunteers report at least one AE. Scaled by cohort. 2mg cohort approximately 50 percent (3 of 6 volunteers). 4mg cohort approximately 65 percent (4 of 6 volunteers). 8mg cohort approximately 80 percent (5 of 6 volunteers). Volunteers who report AEs typically report 1 to 3 events distributed across the 5 assessment events. The high responder is guaranteed to report at least the ALT elevation AE plus likely some minor events. The SAE volunteer is guaranteed to report the gastroenteritis SAE plus possibly some minor events.
+
+### Engineered narrative threads
+Thread 1 the high responder. ZA-CPT-P1-080 carries through from D5. Reports a Grade 1 ALT elevation AE at Day 7 follow-up matching the D5 lab finding. AE term transaminase elevation. Onset Day 7. Causality probably related. Action none because single dose already complete. Outcome ongoing at end of follow-up. This is the D5 to D6 cross-instrument consistency that real clinical data managers maintain.
+
+Thread 2 the unrelated SAE. One volunteer picked deterministically using the random seed from the 14 non-cast volunteers reports severe gastroenteritis between Day 3 and Day 5. CTCAE Grade 3. Causality unrelated to study drug. Onset between Day 3 and Day 5 specifically between scheduled assessments. Action not applicable single dose complete. Outcome recovered within 48 hours. Meets SAE criterion hospitalisation due to overnight admission for IV rehydration. Sponsor and ethics reporting dates documented within ICH timelines.
+
+### Why the unrelated SAE strengthens the portfolio
+Three layers of narrative now visible in the data. Layer 1 the dose-response layer where most volunteers report minor AEs scaling with cohort. Layer 2 the drug-related significant finding layer where the high responder shows the Grade 1 ALT elevation. Layer 3 the unrelated SAE layer where the gastroenteritis hospitalisation is properly captured assessed and excluded as drug-related. A reviewer sees a complete safety reporting workflow demonstrated end to end including the judgement-heavy work of distinguishing drug-related events from unrelated ones. APVAsC training directly applies to layer 3.
+
+### Eight section build plan
+Section 1 configurations including the AE term pool with weights cohort AE rate constants engineered narrative constants and d6_template dictionary. Section 2 event configuration listing the 5 D6-mapped events from REDCap. Section 3 load D3a and filter to Randomised. Section 4 load any other upstream demographic data possibly small or skipped because AE generation does not depend on weight or sex. Section 5 assign narrative roles. High responder carries over from D5. SAE volunteer picked from the 14 non-cast volunteers using the random seed. Section 6 the make_d6_record function generating one AE record at a time. Structurally simpler than D5 because no calculated lab values just term selection severity dates and narrative fields. Section 7 the nested loop with variable per-volunteer-event record count. Section 8 verification prints and CSV export.
+
+
+### Architectural lesson worth keeping
+D6 demonstrates cross-instrument narrative consistency. The high responder's Day 7 ALT finding appears once in D5 as a lab abnormality and once in D6 as an adverse event with matching dates matching severity matching causality assessment. This is what good clinical data management looks like in real trials. Most simulations do not capture this discipline and it is one of the things that will mark this portfolio as serious work.
+
+### Next milestone
+Build simulate_d6.py starting with Section 1.
+
+---
