@@ -558,3 +558,8 @@ with open("d5_safety_labs_and_vitals.csv", mode="w", newline="", encoding="utf-8
     writer.writerows(all_d5_records)
 
 print(f"\nD5 records saved to d5_safety_labs_and_vitals.csv")
+with open("d5_cast_assignments.csv", mode="w", newline="", encoding="utf-8") as f:
+    writer = csv.writer(f)
+    writer.writerow(["record_id", "role"])
+    for rid, role in narrative_roles.items():
+        writer.writerow([rid, role])

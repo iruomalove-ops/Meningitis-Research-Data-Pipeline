@@ -1009,3 +1009,46 @@ D6 demonstrates cross-instrument narrative consistency. The high responder's Day
 Build simulate_d6.py starting with Section 1.
 
 ---
+## 2026-06-09 — simulate_d6.py complete — 90 AE records with two engineered narrative threads
+
+### What was built
+Completed simulate_d6.py across all seven sections. Reads d3a_dose_assignment.csv for the 18 Randomised volunteers and d5_cast_assignments.csv to inherit the D5 narrative cast. Generates one D6 record per volunteer per D6-mapped event giving 90 records across 5 events. Each record is either a placeholder with ae_any=0 (no AEs reported at that assessment) or an AE record with ae_any=1 (one record per AE). Two engineered narratives present in the data: the high responder's Grade 1 ALT elevation AE at Day 7 inherited from D5, and an unrelated SAE for gastroenteritis with overnight hospitalisation in a separately picked volunteer.
+
+### Final cast across D5 and D6
+- ZA-CPT-P1-080 high responder. Carries forward from D5. Day 7 transaminase elevation AE Grade 1, probably related to study drug, outcome recovering (ongoing at end of follow-up).
+- ZA-CPT-P1-010 SAE volunteer. Picked randomly from the 14 non-cast volunteers. Acute gastroenteritis CTCAE Grade 3 onset Day 5, recovered without sequelae within 48 hours, hospitalisation criterion met, assessed as unrelated to study drug.
+- ZA-CPT-P1-078 anaemic, ZA-CPT-P1-059 ALT-elevated baseline, ZA-CPT-P1-084 dehydrated. These D5 cast members do not have D6 roles because their D5 findings are sub-clinical and would not generate AE entries in real trials.
+
+### Architectural pattern established this session
+D5 writes a cast assignments file to disk. D6 reads it to know which volunteers already have narrative roles. Same pattern will carry forward to D7 and any future downstream scripts. This is the disk-based equivalent of cross-script state passing. It maintains single-source-of-truth across the pipeline because each script's cast decisions are explicitly written and explicitly read rather than reverse-engineered from output data or hardcoded.
+
+### New Python patterns learned this session
+Two-pass record generation. First pass builds an AE schedule per volunteer using helper functions. Second pass iterates the schedule and generates records calling the function. Cleaner than trying to make all decisions inline. Helper functions returning dictionaries to pass as specifications to other functions. Random sample for picking events without replacement so the same event does not get chosen twice for routine AEs from the same volunteer. ICH SAE reporting timeline computation using timedelta arithmetic from onset date.
+
+### Bugs caught and fixed during this build
+First bug. The d6_template had old field names from a first draft of Section 1 (ae_severity, ae_causality, ae_action_taken, ae_narrative, sae_signoff) while the make_d6_record function used the verified REDCap field names (ae_ctcae_grade, ae_relatedness, ae_action, ae_treatment, plus the new ae_ongoing, ae_onset_time, ae_resolution_date fields). The mismatch did not surface until Section 7 tried to write the CSV and got a ValueError about extra keys. Fix replaced the template with the verified version. The lesson is that the data dictionary verification step has to fully propagate through all references in the file. A partial verification leaves silent inconsistencies that surface much later.
+
+Second bug. The main loop was missing from the file entirely. The helper functions were pasted but the loop that calls them was not. The script ran cleanly through to the end of Section 4 then exited without producing any D6 records and without raising any error because there was nothing missing from a syntax perspective. The fix was adding the main loop. The lesson is that completion at the script level is not the same as completion at the section level. Need to scroll to the end and verify the loop exists before assuming the build is done.
+
+Third issue, not a bug but worth noting. The cohort AE distribution did not land where we designed. Expected pattern of 50/65/80 percent of volunteers reporting AEs produced 5/6, 3/6, 6/6 in this specific run. The 4mg cohort underreported. This is a small-sample-size artefact and a realistic simulation outcome. Real Phase 1 trials at this size produce noisy data that does not always fit the expected dose-response pattern cleanly. Decision is to leave it as-is rather than engineer the seed for prettier numbers. Honest noise beats artificial smoothness.
+
+### Verification confirms narrative landed
+Total 90 records across 18 volunteers and 5 events. Both engineered findings present and correctly populated. High responder ALT elevation has onset Day 7, Grade 1, outcome Recovering. SAE has onset Day 5, Grade 3, sponsor reported Day 6 within ICH 24-hour timeline. Cohort AE pattern shows the expected directional trend at the volunteer level even with the middle cohort variance.
+
+### Pipeline status
+Six instruments now fully built and tested.
+- simulate_d1.py 100 screened records
+- simulate_d2.py 28 eligible records
+- simulate_d3a.py 28 dose assignment records
+- simulate_d4.py 144 PK sampling records
+- simulate_d5.py 180 safety labs and vitals records
+- simulate_d6.py 90 adverse events and SAE records
+
+Two instruments still need work.
+- simulate_d3b.py exists in the repo from an earlier session but its current state needs review. The original D3b was likely built before D4 D5 and D6 contained engineered narratives so its SRC review rationale fields probably do not reference the actual findings the SRC would be reviewing. Status to be verified in next session.
+- simulate_d7.py not yet built. Volunteer symptom diary across the first 7 days post-dose. Volunteer-completed survey different in shape from the other instruments.
+
+### Next milestone
+Review the existing simulate_d3b.py to determine whether the storyline still matches given the engineered narratives in D4 D5 D6. Decide whether to update or rebuild. Then build simulate_d7.py. After both are complete the simulation phase is genuinely finished and we move to SQL pipeline.
+
+---

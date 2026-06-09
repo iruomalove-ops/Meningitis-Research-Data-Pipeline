@@ -1,0 +1,91 @@
+record_id,redcap_repeat_instance,redcap_event_name,ae_any,ae_term,ae_onset_date,ae_onset_time,ae_resolution_date,ae_ongoing,ae_ctcae_grade,ae_relatedness,ae_outcome,ae_action,ae_treatment,is_sae,sae_criterion,sae_reported_sponsor_date,sae_reported_ethics_date,ae_pi_signoff
+ZA-CPT-P1-064,1,day_0__dosing_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-064,2,pk_t8h_arm_1,1,Headache,2025-05-19,16:12,2025-05-21,0,1,4,1,1,Self-limited. Symptomatic management as needed.,0,,,,NMC
+ZA-CPT-P1-064,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-064,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-064,5,day_7_followup_arm_1,1,Feeling jittery or restless,2025-05-26,16:26,2025-05-27,0,1,2,1,1,Self-limited. Symptomatic management as needed.,0,,,,SJM
+ZA-CPT-P1-078,1,day_0__dosing_arm_1,1,Increased appetite,2025-05-19,12:51,2025-05-22,0,1,2,1,1,Self-limited. Symptomatic management as needed.,0,,,,SJM
+ZA-CPT-P1-078,2,pk_t8h_arm_1,1,Nausea,2025-05-19,19:29,2025-05-21,0,1,2,1,1,Self-limited. Symptomatic management as needed.,0,,,,NMC
+ZA-CPT-P1-078,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-078,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-078,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-027,1,day_0__dosing_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-027,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-027,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-027,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-027,5,day_7_followup_arm_1,1,Dyspepsia,2025-05-26,09:24,2025-05-27,0,1,2,1,1,Self-limited. Symptomatic management as needed.,0,,,,NMC
+ZA-CPT-P1-072,1,day_0__dosing_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-072,2,pk_t8h_arm_1,1,Dry mouth,2025-05-19,14:17,2025-05-21,0,1,2,1,1,Self-limited. Symptomatic management as needed.,0,,,,TLO
+ZA-CPT-P1-072,3,pk_t24h_arm_1,1,Fatigue,2025-05-20,19:35,2025-05-23,0,1,3,1,1,Self-limited. Symptomatic management as needed.,0,,,,SJM
+ZA-CPT-P1-072,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-072,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-084,1,day_0__dosing_arm_1,1,Mild dizziness,2025-05-19,14:56,2025-05-20,0,2,3,1,1,Self-limited. Symptomatic management as needed.,0,,,,TLO
+ZA-CPT-P1-084,2,pk_t8h_arm_1,1,Vivid dreams,2025-05-19,15:09,2025-05-20,0,1,4,1,1,Self-limited. Symptomatic management as needed.,0,,,,SJM
+ZA-CPT-P1-084,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-084,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-084,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-057,1,day_0__dosing_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-057,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-057,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-057,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-057,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-062,1,day_0__dosing_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-062,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-062,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-062,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-062,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-056,1,day_0__dosing_arm_1,1,Dry mouth,2025-06-09,18:46,2025-06-10,0,1,3,1,1,Self-limited. Symptomatic management as needed.,0,,,,NMC
+ZA-CPT-P1-056,2,pk_t8h_arm_1,1,Fatigue,2025-06-09,18:56,2025-06-12,0,3,3,1,1,Self-limited. Symptomatic management as needed.,0,,,,NMC
+ZA-CPT-P1-056,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-056,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-056,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-074,1,day_0__dosing_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-074,2,pk_t8h_arm_1,1,Fatigue,2025-06-09,16:58,2025-06-10,0,2,4,1,1,Self-limited. Symptomatic management as needed.,0,,,,NMC
+ZA-CPT-P1-074,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-074,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-074,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-059,1,day_0__dosing_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-059,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-059,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-059,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-059,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-085,1,day_0__dosing_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-085,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-085,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-085,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-085,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-018,1,day_0__dosing_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-018,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-018,3,pk_t24h_arm_1,1,Dyspepsia,2025-06-10,19:31,2025-06-11,0,2,3,1,1,Self-limited. Symptomatic management as needed.,0,,,,NMC
+ZA-CPT-P1-018,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-018,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-080,1,day_0__dosing_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-080,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-080,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-080,4,pk_t48h_arm_1,1,Hot flushes,2025-07-02,11:45,2025-07-04,0,1,3,1,1,Self-limited. Symptomatic management as needed.,0,,,,SJM
+ZA-CPT-P1-080,5,day_7_followup_arm_1,1,Transaminase elevation,2025-07-07,14:42,,1,1,4,3,1,"Mild ALT elevation noted at Day 7 follow-up. Volunteer is sentinel in 8mg cohort with strong T+48h response across glucose, neutrophilia and potassium. Considered probably related to study drug. No specific treatment indicated. Repeat LFTs scheduled in 48 hours. Flagged for SRC discussion.",0,,,,TLO
+ZA-CPT-P1-100,1,day_0__dosing_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-100,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-100,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-100,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-100,5,day_7_followup_arm_1,1,Fatigue,2025-07-07,09:45,2025-07-08,0,1,2,1,1,Self-limited. Symptomatic management as needed.,0,,,,NMC
+ZA-CPT-P1-010,1,day_0__dosing_arm_1,1,Dyspepsia,2025-06-30,16:08,2025-07-02,0,1,3,1,1,Self-limited. Symptomatic management as needed.,0,,,,NMC
+ZA-CPT-P1-010,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-010,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-010,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-010,5,day_7_followup_arm_1,1,Acute gastroenteritis,2025-07-05,11:50,2025-07-07,0,3,1,1,5,"Acute onset gastroenteritis with vomiting and diarrhoea. Volunteer presented to emergency on Day 5 with signs of moderate dehydration. Admitted for overnight IV rehydration. Symptoms resolved within 48 hours. Likely viral or food-borne. Assessed as unrelated to study drug given clinical picture, timing and absence of plausible mechanism for single-dose corticosteroid.",1,3,2025-07-06,2025-07-12,TLO
+ZA-CPT-P1-045,1,day_0__dosing_arm_1,1,Headache,2025-06-30,08:43,2025-07-01,0,1,3,1,1,Self-limited. Symptomatic management as needed.,0,,,,SJM
+ZA-CPT-P1-045,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-045,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-045,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-045,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-098,1,day_0__dosing_arm_1,1,Nausea,2025-06-30,15:15,2025-07-01,0,1,3,1,1,Self-limited. Symptomatic management as needed.,0,,,,TLO
+ZA-CPT-P1-098,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-098,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,TLO
+ZA-CPT-P1-098,4,pk_t48h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-098,5,day_7_followup_arm_1,0,,,,,,,,,,,,,,,NMC
+ZA-CPT-P1-050,1,day_0__dosing_arm_1,1,Headache,2025-06-30,20:35,2025-07-01,0,1,3,1,1,Self-limited. Symptomatic management as needed.,0,,,,SJM
+ZA-CPT-P1-050,2,pk_t8h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-050,3,pk_t24h_arm_1,0,,,,,,,,,,,,,,,SJM
+ZA-CPT-P1-050,4,pk_t48h_arm_1,1,Cannulation site discomfort,2025-07-02,10:12,2025-07-03,0,1,2,1,1,Self-limited. Symptomatic management as needed.,0,,,,TLO
+ZA-CPT-P1-050,5,day_7_followup_arm_1,1,Headache,2025-07-07,11:03,2025-07-08,0,1,4,1,1,Self-limited. Symptomatic management as needed.,0,,,,TLO
