@@ -1052,3 +1052,35 @@ Two instruments still need work.
 Review the existing simulate_d3b.py to determine whether the storyline still matches given the engineered narratives in D4 D5 D6. Decide whether to update or rebuild. Then build simulate_d7.py. After both are complete the simulation phase is genuinely finished and we move to SQL pipeline.
 
 ---
+## 2026-06-10 — simulate_d7.py design locked — volunteer symptom diary with cross-instrument narrative
+
+### Why D7 comes before D3b
+Reordered the build sequence on a sharp clinical observation. D3b is the SRC safety review at Day 21 which reviews all the data that came before it including D4 PK, D5 labs, D6 AEs, and D7 diary. If D7 contains any engineered narrative threads they need to exist before D3b can be written with full narrative consistency. Building D3b first would mean having to come back and edit it once D7 produced findings the SRC would have reviewed. Same temporal causality discipline that drove the original split of D3 into D3a and D3b. Information flows in the direction of time. D3b sits at the end because every other instrument's data is upstream of it.
+
+### The structural realisation about D7
+D7 is a volunteer-completed survey not an investigator-captured form. Different voice. Different threshold for capture. Investigators in D6 capture AEs that meet a clinical threshold. Volunteers in D7 record everything they noticed about themselves with no clinical filter. In normal logic that would mean D7 reports more symptoms than D6. But the clinical reality of single-dose IV dexamethasone in healthy young adults cuts through that assumption. The well-known dexamethasone side effects come from chronic exposure or high-dose courses. A single 2 to 8 milligram IV dose produces detectable physiological changes (visible in labs and demargination effects) but does not typically produce strong volunteer-felt symptoms. So D7 should be quiet. Most volunteers most days report None for every symptom. This is realistic AND it tells a meaningful dashboard story. The drug was well-tolerated by volunteer self-report with the dose-dependent biological effects visible in labs but not strongly visible in self-reported symptoms.
+
+### Locked design
+D7 fires at 4 events: Day 0 dosing, T+24h, T+48h, Day 7 follow-up. One record per volunteer per event giving 18 times 4 equals 72 records total. No placeholder versus full record distinction. Every record is a complete diary entry. The diary_day field captures which day this entry corresponds to: 1 for Day 0 dosing, 2 for T+24h, 3 for T+48h, 7 for Day 7 follow-up. The 7 symptom severity fields rate the volunteer's experience over the period since their last entry on a 0-3 scale (None, Mild, Moderate, Severe). Symptom rates scale by cohort dose. The 8mg cohort reports slightly higher symptom densities than the 2mg cohort. Symptoms differentiated by common (insomnia, fatigue, appetite) vs uncommon (headache, nausea, mood, gi) because dexamethasone affects sleep and appetite more reliably than mood or gi.
+
+### Engineered narrative threads in D7
+Thread 1 the high responder ZA-CPT-P1-080. Reports mild insomnia on Day 1 (Day 0 event entry) consistent with corticosteroid sleep effects. Reports some fatigue across the trial. Their ALT elevation in D5/D6 is biochemically real but subjectively imperceptible so we do not engineer dramatic D7 symptoms for them. Just a slight nudge above their cohort average.
+
+Thread 2 the SAE volunteer ZA-CPT-P1-010. This is the clearest D7 signal. Their Day 1 and Day 2 entries are unremarkable. Their Day 3 entry (T+48h event) shows moderate or severe GI symptoms, severe nausea, moderate fatigue, reflecting the onset of gastroenteritis before formal admission. Their Day 7 entry shows recovery. This means the same SAE volunteer whose SAE was recorded for in D6 has diary entries that biologically precede and follow the formal SAE event. Cross-instrument narrative consistency.
+
+### Why this serves the portfolio
+The dashboard story now traces dose-response across three different data sources. Labs in D5 show dose-scaled physiological changes. AEs in D6 show dose-scaled symptom rates with one engineered drug-related signal. Diary in D7 shows dose-scaled subjective symptoms (quietly). The same engineered narratives (high responder, SAE volunteer) thread through all three instruments with biological and temporal consistency. A reviewer sees one coherent clinical story across multiple data sources rather than four disconnected datasets that happen to share record_ids. That is what good clinical data management produces in real trials.
+
+### Architectural patterns continuing from D6
+D5 writes a cast assignments file. D6 reads it. D6 writes its own cast file. D7 reads both. Each script's narrative decisions are explicitly written to disk and explicitly read by downstream scripts rather than reverse-engineered from output data or hardcoded. Single source of truth across script boundaries. This is the disk-based equivalent of cross-script state passing.
+
+### Seven-section build plan
+Section 1 configurations including symptom rate dictionaries by cohort and by symptom category, narrative constants, d7_template dictionary verified against the data dictionary. Section 2 event configuration with the 4 D7-mapped events and their diary_day mapping. Section 3 load D3a filter to Randomised. Section 4 load D5 and D6 cast assignments. Section 5 make_d7_record function with cohort-scaled symptom generation plus narrative overrides for the engineered volunteers. Section 6 nested loop 18 by 4 producing 72 records. Section 7 verification and CSV export.
+
+### Pipeline status
+Six instruments built. D7 design locked, ready to build. D3b in repo but its current state needs review after D7 is complete.
+
+### Next milestone
+Build simulate_d7.py starting with Section 1.
+
+---
