@@ -1084,3 +1084,40 @@ Six instruments built. D7 design locked, ready to build. D3b in repo but its cur
 Build simulate_d7.py starting with Section 1.
 
 ---
+## 2026-06-10 — simulate_d7.py complete — 72 diary records with cross-instrument narrative consistency
+
+### What was built
+Completed simulate_d7.py across all seven sections. Reads d3a_dose_assignment.csv for the 18 Randomised volunteers and inherits the engineered narrative cast from d5_cast_assignments.csv (high responder) and d6_cast_assignments.csv (SAE volunteer). Generates one D7 record per volunteer per D7-mapped event giving 72 records total across 4 events. Symptom severity uniformly rated 0-3 (None, Mild, Moderate, Severe) across 7 symptom categories per record.
+
+### Verification confirms all four narrative beats landed correctly
+High responder Day 1 entry shows Moderate insomnia (rating 2) consistent with first-night corticosteroid sleep effect. High responder Day 1 fatigue boosted to 2 as designed. SAE volunteer Day 3 entry shows Severe GI symptoms (rating 3), Severe nausea (rating 3), and Moderate fatigue (rating 2) reflecting the acute gastroenteritis onset before formal hospitalisation. SAE volunteer Day 7 entry shows all seven symptoms reset to None reflecting post-hospitalisation recovery. Cross-instrument consistency intact across D5 D6 and D7 for both engineered narratives.
+
+### Cohort dose-response trend visible in diary data
+Mean total severity per record across all 7 symptoms shows clean gradient: 1.79 for 2mg cohort, 2.29 for 4mg cohort, 2.67 for 8mg cohort. The dose-response thread now visible across three different data sources. Labs in D5 show dose-scaled physiological changes. AEs in D6 show dose-scaled symptom rates. Diary in D7 shows dose-scaled subjective symptoms. One coherent clinical story across multiple instruments.
+
+### Architectural pattern fully demonstrated this session
+The disk-based cast assignment pattern reached its full expression. D5 wrote a cast file. D6 read D5 and wrote its own. D7 read both D5 and D6 cast files to inherit the full upstream narrative cast. Each script's narrative decisions are explicitly written to disk and explicitly read by downstream scripts rather than hardcoded or reverse-engineered from output data. Single source of truth across script boundaries. This same pattern will let D3b read all four cast files (D5, D6, D7) when we build it.
+
+### New Python patterns this session
+Helper function generate_symptom_rating taking cohort code and a boolean is_common flag, looking up the appropriate probability distribution, and using random.choices with weights for a weighted draw from 0-3. Used 7 times per record. The min function for capping the high responder fatigue boost so the boosted value never exceeds the maximum dropdown value of 3. Pattern of generating baseline values first then applying narrative overrides afterward keeping the function readable.
+
+### Honest design choice worth noting
+The SAE volunteer's Day 5 hospitalisation does not have a corresponding D7 entry because D7 only fires at Day 0, T+24h, T+48h, and Day 7 not at Day 5. The Day 3 entry captures pre-hospitalisation escalating symptoms. The Day 7 entry captures post-recovery normal symptoms. The gap between them is exactly when the SAE event occurred. This realistically reflects that volunteers do not fill in diary entries while in hospital being treated for an SAE.
+
+### Pipeline status
+Seven of seven planned simulation instruments now substantially built.
+- simulate_d1.py 100 screened records
+- simulate_d2.py 28 eligible records
+- simulate_d3a.py 28 dose assignment records
+- simulate_d4.py 144 PK sampling records
+- simulate_d5.py 180 safety labs and vitals records
+- simulate_d6.py 90 adverse events and SAE records
+- simulate_d7.py 72 volunteer symptom diary records
+
+One simulation instrument still needs review.
+- simulate_d3b.py exists in the repo from an earlier session before the engineered narratives were designed. Its current SRC review rationale fields probably do not reference the actual findings the SRC would be reviewing in D4, D5, D6, and D7. Status to be reviewed in next session. The architectural decision is whether to update D3b to incorporate the engineered findings or rebuild it.
+
+### Next milestone
+Review simulate_d3b.py to determine whether the existing storyline still matches given the engineered narratives now present in D4 D5 D6 and D7. The high responder's Day 7 ALT elevation, the unrelated SAE, and the cohort-scaled effects all need to be reflected in the SRC review rationale and decision fields. After D3b is updated or rebuilt the simulation phase is genuinely complete and we move to SQL pipeline then Power BI then SDTM capstone.
+
+---

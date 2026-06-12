@@ -1,0 +1,73 @@
+record_id,redcap_repeat_instance,redcap_event_name,diary_date,diary_day,sym_headache,sym_fatigue,sym_nausea,sym_insomnia,sym_mood,sym_appetite,sym_gi,sym_other,sym_other_details,diary_medication,diary_med_details,diary_completed_by
+ZA-CPT-P1-064,1,day_0__dosing_arm_1,2025-05-19,1,0,0,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-064,2,pk_t24h_arm_1,2025-05-20,2,0,0,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-064,3,pk_t48h_arm_1,2025-05-21,3,0,0,1,1,0,0,0,0,,0,,1
+ZA-CPT-P1-064,4,day_7_followup_arm_1,2025-05-26,7,1,0,0,1,0,0,0,0,,1,"Paracetamol 500mg, taken once or twice for headache/fatigue",1
+ZA-CPT-P1-078,1,day_0__dosing_arm_1,2025-05-19,1,0,0,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-078,2,pk_t24h_arm_1,2025-05-20,2,1,0,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-078,3,pk_t48h_arm_1,2025-05-21,3,0,0,0,2,0,0,0,0,,0,,1
+ZA-CPT-P1-078,4,day_7_followup_arm_1,2025-05-26,7,0,1,0,0,0,1,1,0,,0,,1
+ZA-CPT-P1-027,1,day_0__dosing_arm_1,2025-05-19,1,0,0,0,0,0,0,2,0,,0,,1
+ZA-CPT-P1-027,2,pk_t24h_arm_1,2025-05-20,2,0,0,0,0,0,1,2,0,,1,"Multivitamin, daily routine",1
+ZA-CPT-P1-027,3,pk_t48h_arm_1,2025-05-21,3,0,1,0,0,0,1,0,0,,0,,1
+ZA-CPT-P1-027,4,day_7_followup_arm_1,2025-05-26,7,0,1,0,2,0,0,0,0,,0,,1
+ZA-CPT-P1-072,1,day_0__dosing_arm_1,2025-05-19,1,0,1,0,2,0,1,0,1,"Dry skin, more noticeable than usual",0,,1
+ZA-CPT-P1-072,2,pk_t24h_arm_1,2025-05-20,2,0,0,1,0,0,0,0,0,,1,"Multivitamin, daily routine",1
+ZA-CPT-P1-072,3,pk_t48h_arm_1,2025-05-21,3,0,0,0,1,0,0,0,1,"Dry skin, more noticeable than usual",0,,1
+ZA-CPT-P1-072,4,day_7_followup_arm_1,2025-05-26,7,0,0,0,0,0,0,0,0,,0,,2
+ZA-CPT-P1-084,1,day_0__dosing_arm_1,2025-05-19,1,0,0,0,1,0,0,1,0,,0,,1
+ZA-CPT-P1-084,2,pk_t24h_arm_1,2025-05-20,2,0,0,0,1,0,0,0,0,,1,"Multivitamin, daily routine",1
+ZA-CPT-P1-084,3,pk_t48h_arm_1,2025-05-21,3,0,1,0,0,0,0,0,0,,1,"Multivitamin, daily routine",1
+ZA-CPT-P1-084,4,day_7_followup_arm_1,2025-05-26,7,2,0,0,1,1,0,1,0,,0,,1
+ZA-CPT-P1-057,1,day_0__dosing_arm_1,2025-05-19,1,0,0,2,0,0,0,0,0,,0,,3
+ZA-CPT-P1-057,2,pk_t24h_arm_1,2025-05-20,2,0,0,0,2,1,0,0,0,,0,,1
+ZA-CPT-P1-057,3,pk_t48h_arm_1,2025-05-21,3,0,0,1,0,0,1,0,0,,0,,1
+ZA-CPT-P1-057,4,day_7_followup_arm_1,2025-05-26,7,0,1,0,0,0,0,0,0,,1,"Multivitamin, daily routine",1
+ZA-CPT-P1-062,1,day_0__dosing_arm_1,2025-06-09,1,0,0,0,0,1,0,1,0,,0,,1
+ZA-CPT-P1-062,2,pk_t24h_arm_1,2025-06-10,2,0,0,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-062,3,pk_t48h_arm_1,2025-06-11,3,0,2,0,0,0,1,1,0,,1,"Paracetamol 500mg, taken once or twice for headache/fatigue",1
+ZA-CPT-P1-062,4,day_7_followup_arm_1,2025-06-16,7,0,1,0,1,0,0,0,0,,0,,1
+ZA-CPT-P1-056,1,day_0__dosing_arm_1,2025-06-09,1,0,0,0,1,0,0,0,1,"Mild back ache, possibly from lying in bed",0,,1
+ZA-CPT-P1-056,2,pk_t24h_arm_1,2025-06-10,2,1,0,1,0,0,0,0,0,,0,,1
+ZA-CPT-P1-056,3,pk_t48h_arm_1,2025-06-11,3,1,1,1,0,0,1,0,0,,0,,2
+ZA-CPT-P1-056,4,day_7_followup_arm_1,2025-06-16,7,1,0,1,0,2,0,0,0,,0,,1
+ZA-CPT-P1-074,1,day_0__dosing_arm_1,2025-06-09,1,1,2,0,0,0,1,0,0,,1,"Paracetamol 500mg, taken once or twice for headache/fatigue",2
+ZA-CPT-P1-074,2,pk_t24h_arm_1,2025-06-10,2,0,1,0,0,0,0,0,0,,0,,2
+ZA-CPT-P1-074,3,pk_t48h_arm_1,2025-06-11,3,0,0,2,2,0,0,1,0,,1,"Multivitamin, daily routine",1
+ZA-CPT-P1-074,4,day_7_followup_arm_1,2025-06-16,7,0,0,0,2,0,0,2,0,,1,"Multivitamin, daily routine",1
+ZA-CPT-P1-059,1,day_0__dosing_arm_1,2025-06-09,1,0,0,0,1,0,1,0,0,,0,,1
+ZA-CPT-P1-059,2,pk_t24h_arm_1,2025-06-10,2,0,0,0,0,0,1,0,0,,0,,1
+ZA-CPT-P1-059,3,pk_t48h_arm_1,2025-06-11,3,1,2,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-059,4,day_7_followup_arm_1,2025-06-16,7,0,0,0,0,0,0,1,0,,0,,1
+ZA-CPT-P1-085,1,day_0__dosing_arm_1,2025-06-09,1,0,0,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-085,2,pk_t24h_arm_1,2025-06-10,2,0,1,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-085,3,pk_t48h_arm_1,2025-06-11,3,0,1,0,0,0,1,1,0,,0,,1
+ZA-CPT-P1-085,4,day_7_followup_arm_1,2025-06-16,7,0,0,2,1,0,1,1,0,,0,,1
+ZA-CPT-P1-018,1,day_0__dosing_arm_1,2025-06-09,1,1,1,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-018,2,pk_t24h_arm_1,2025-06-10,2,0,0,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-018,3,pk_t48h_arm_1,2025-06-11,3,0,1,0,1,0,0,0,0,,1,"Sleep tea, herbal, evening",2
+ZA-CPT-P1-018,4,day_7_followup_arm_1,2025-06-16,7,0,1,1,0,0,0,0,0,,0,,1
+ZA-CPT-P1-080,1,day_0__dosing_arm_1,2025-06-30,1,0,2,0,2,0,1,0,0,,0,,1
+ZA-CPT-P1-080,2,pk_t24h_arm_1,2025-07-01,2,0,3,1,1,0,2,0,0,,0,,2
+ZA-CPT-P1-080,3,pk_t48h_arm_1,2025-07-02,3,0,1,0,0,1,0,0,1,Mild metallic taste in mouth,0,,1
+ZA-CPT-P1-080,4,day_7_followup_arm_1,2025-07-07,7,0,1,0,0,0,3,0,0,,1,"Multivitamin, daily routine",1
+ZA-CPT-P1-100,1,day_0__dosing_arm_1,2025-06-30,1,0,0,1,1,0,0,0,0,,0,,3
+ZA-CPT-P1-100,2,pk_t24h_arm_1,2025-07-01,2,0,1,0,1,1,0,0,0,,0,,2
+ZA-CPT-P1-100,3,pk_t48h_arm_1,2025-07-02,3,0,0,0,0,0,1,0,0,,0,,1
+ZA-CPT-P1-100,4,day_7_followup_arm_1,2025-07-07,7,0,0,0,0,0,1,0,0,,0,,1
+ZA-CPT-P1-010,1,day_0__dosing_arm_1,2025-06-30,1,0,0,0,1,0,0,0,0,,0,,1
+ZA-CPT-P1-010,2,pk_t24h_arm_1,2025-07-01,2,0,0,1,1,0,0,0,0,,0,,1
+ZA-CPT-P1-010,3,pk_t48h_arm_1,2025-07-02,3,0,2,3,0,0,0,3,0,,1,"Paracetamol 500mg, taken once or twice for headache/fatigue",1
+ZA-CPT-P1-010,4,day_7_followup_arm_1,2025-07-07,7,0,0,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-045,1,day_0__dosing_arm_1,2025-06-30,1,0,0,0,0,0,0,0,1,"Dry skin, more noticeable than usual",0,,1
+ZA-CPT-P1-045,2,pk_t24h_arm_1,2025-07-01,2,0,0,0,0,1,1,0,0,,0,,1
+ZA-CPT-P1-045,3,pk_t48h_arm_1,2025-07-02,3,2,1,1,0,0,0,0,0,,0,,1
+ZA-CPT-P1-045,4,day_7_followup_arm_1,2025-07-07,7,1,0,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-098,1,day_0__dosing_arm_1,2025-06-30,1,1,2,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-098,2,pk_t24h_arm_1,2025-07-01,2,0,2,0,1,0,0,0,0,,0,,1
+ZA-CPT-P1-098,3,pk_t48h_arm_1,2025-07-02,3,0,0,0,2,0,0,2,0,,0,,1
+ZA-CPT-P1-098,4,day_7_followup_arm_1,2025-07-07,7,0,0,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-050,1,day_0__dosing_arm_1,2025-06-30,1,0,1,0,0,0,0,0,0,,0,,1
+ZA-CPT-P1-050,2,pk_t24h_arm_1,2025-07-01,2,0,0,0,0,0,0,0,0,,1,Antacid tablet for mild indigestion,1
+ZA-CPT-P1-050,3,pk_t48h_arm_1,2025-07-02,3,0,1,0,1,0,2,0,0,,0,,1
+ZA-CPT-P1-050,4,day_7_followup_arm_1,2025-07-07,7,0,2,1,0,2,1,0,0,,0,,1
