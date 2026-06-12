@@ -1121,3 +1121,38 @@ One simulation instrument still needs review.
 Review simulate_d3b.py to determine whether the existing storyline still matches given the engineered narratives now present in D4 D5 D6 and D7. The high responder's Day 7 ALT elevation, the unrelated SAE, and the cohort-scaled effects all need to be reflected in the SRC review rationale and decision fields. After D3b is updated or rebuilt the simulation phase is genuinely complete and we move to SQL pipeline then Power BI then SDTM capstone.
 
 ---
+## 2026-06-10 — simulate_d3b.py rebuilt — simulation phase complete
+
+### What was rebuilt
+Updated simulate_d3b.py to incorporate the engineered narratives now present in D5, D6, and D7. The previous version was written before the engineered cast existed and produced 18 identical generic SRC rationales. The new version produces cohort-specific rationales that reference the actual findings the SRC would have reviewed. The 2mg and 4mg cohort rationales describe clean uneventful escalations. The 8mg cohort rationale explicitly adjudicates both engineered findings by record_id: the high responder's Grade 1 ALT elevation at Day 7 (probably related, below DLT threshold) and the unrelated SAE of acute gastroenteritis (unrelated to study drug, sponsor and ethics notified per ICH timelines). 
+
+### Cross-instrument narrative consistency complete
+The narrative thread now flows from D5 labs (high responder Day 7 ALT abnormality) to D6 AEs (the Grade 1 transaminase elevation AE entry plus the gastroenteritis SAE) to D7 diary (high responder's mild insomnia and fatigue, SAE volunteer's escalating GI symptoms Day 3 then recovery Day 7) and finally into D3b SRC review where both findings are explicitly named and formally adjudicated. A reviewer reading the dashboard end to end would see one coherent clinical story told through four different data sources, each one adding evidence to the same picture. This is what good clinical data management produces in real trials.
+
+### Design decisions locked
+The 8mg cohort src_decision stays at code 1 (escalate) but the rationale acknowledges the Grade 1 ALT signal warranted SRC attention. Grade 1 is below DLT threshold so the trial continues but with cautionary documentation for any future trials extending the dose range. The SAE volunteer's gastroenteritis gets formal SRC adjudication explicitly mentioned in the cohort rationale even though it is unrelated to drug, because real SRC meetings adjudicate all SAEs.
+
+The DLT logic became deterministic. All volunteers have dlt_observed = 0 because no volunteer in the engineered narrative has a true Grade 3+ DLT. The high responder's ALT is Grade 1 below threshold. The SAE is unrelated to drug so not a DLT by definition. The previous 5 percent random DLT rate was removed because random firings would contradict the narrative.
+
+Protocol deviations remain random at 10 percent across all cohorts as realistic background noise.
+
+### Architectural pattern fully demonstrated
+D3b reads d5_cast_assignments.csv and d6_cast_assignments.csv to identify the engineered volunteers. Same disk-based cast pattern that flows through the rest of the pipeline. The high responder ID and SAE volunteer ID are then embedded directly in the 8mg cohort rationale via f-string interpolation so a reviewer sees the SRC explicitly naming the volunteers being adjudicated.
+
+### Pipeline status
+Simulation phase complete. Seven instruments built and tested.
+- simulate_d1.py 100 screened records
+- simulate_d2.py 28 eligible records
+- simulate_d3a.py 28 dose assignment records
+- simulate_d3b.py 18 SRC safety review records with cohort-specific rationale
+- simulate_d4.py 144 PK sampling records
+- simulate_d5.py 180 safety labs and vitals records
+- simulate_d6.py 90 adverse events and SAE records
+- simulate_d7.py 72 volunteer symptom diary records
+
+Total simulated records: 660 across 18 volunteers and the 100-volunteer screening pool.
+
+### Next milestone
+SQL pipeline. Build a relational schema that loads all seven CSVs into a queryable database. Will demonstrate the data engineering side of clinical data management.
+
+---
