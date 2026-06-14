@@ -1,204 +1,84 @@
-# Meningitis Research Data Pipeline
-### A full-stack clinical data portfolio project — from CRF design to dashboard
+# Meningitis Research Pipeline
 
----
+A clinical data engineering portfolio documenting the transition from registered nursing to clinical data management. Built as a two-phase journey toward a Phase 2 trial of dexamethasone combined with a MenB vaccine in meningitis patients. This repository houses the Phase 1 stepping-stone (complete simulation phase, downstream work in progress) and points toward the Phase 2 work ahead.
 
-## Overview
+## Phase 1 — Dexamethasone dose escalation in healthy volunteers
 
-This project simulates a complete, three-phase clinical research programme investigating meningococcal disease — from a first-in-human pharmacokinetic study through to a large-scale federated vaccine efficacy trial.
+A simulated first-in-human Phase 1 dose escalation trial of IV dexamethasone, built end-to-end from CRF design to data simulation to analysis. This is the warmup project, scoped deliberately to a single-agent Phase 1 because it is my first end-to-end pipeline build.
 
-It is built as a portfolio project to demonstrate end-to-end clinical data skills across the tools used in real-world drug development and health informatics: **REDCap, SQL, Python, Power BI, and OMOP CDM**.
+### What this phase demonstrates
 
-The project was designed by a registered nurse with clinical experience in meningitis management, pharmacovigilance training (APVAsC), and intermediate skills in data management and analysis. Every design decision — from CRF field type to OMOP table mapping — is grounded in clinical reasoning, not just technical convention.
+Seven REDCap CRF instruments designed against real Phase 1 trial conventions, with branching logic, repeating events, and cross-instrument validation. Programmatic data simulation in Python producing 660 simulated records across 18 randomised volunteers and a 100-volunteer screening pool. Cross-instrument narrative consistency where two engineered safety findings thread coherently across labs, adverse events, volunteer diary, and SRC safety review. Architectural discipline including disk-based cast assignment files that maintain single-source-of-truth across script boundaries.
 
----
+### Trial design at a glance
 
-## The research question
+Three dose cohorts of six randomised volunteers each, dosed at 2mg, 4mg, and 8mg IV dexamethasone. Sentinel dosing in each cohort. PK sampling at 8 timepoints across 48 hours using a one-compartment IV model with published dexamethasone constants. Safety labs at three timepoints with full CBC, liver function, renal function, and electrolytes. Adverse events captured at five clinical check-ins. Volunteer self-reported symptom diary at four assessment events. SRC safety review at Day 21 for each cohort's escalation decision.
 
-> Can we reduce death and long-term disability from bacterial meningitis through adjuvant therapy and targeted vaccination — and can we build a research data infrastructure that captures, standardises, and analyses that evidence across three phases of development?
+### Engineered safety narrative
 
----
+One volunteer designated as the "high responder" in the 8mg cohort shows above-cohort response at T+48h across glucose, neutrophilia, and potassium, with a Grade 1 ALT elevation emerging at Day 7. One separately selected volunteer experiences acute gastroenteritis requiring overnight hospitalisation between Day 3 and Day 5, formally documented as an SAE but adjudicated as unrelated to study drug. Both narratives thread consistently across D5 labs, D6 AEs, D7 diary, and D3b SRC review, with the same record_ids referenced in each instrument's data.
 
-## Project structure
+### Tools
 
-```
+REDCap for CRF design and electronic data capture. Python for data simulation and analysis. SQL for relational schema and query work. Power BI for clinical dashboards. CDISC SDTM standards for regulatory-grade data structure.
+
+## Current status
+
+| Component | Status |
+|---|---|
+| Phase 1 REDCap CRF design — 7 instruments | Complete |
+| Phase 1 simulation scripts — 7 Python files | Complete |
+| Phase 1 simulated dataset — 660 records | Complete |
+| Cross-instrument narrative consistency | Complete |
+| SQL pipeline and relational schema | In progress |
+| Power BI dashboards | Planned |
+| SDTM mapping capstone | Planned |
+| Phase 2 combination trial in patients | Planned (next project, separate repository) |
+
+## Repository structure
 meningitis-research-pipeline/
 │
-├── README.md
+├── README.md                          # This document
+├── PROGRESS.md                        # Development journal — design decisions and reasoning
 │
 ├── phase1-dexamethasone-pk/
 │   ├── redcap/
-│   │   ├── crf-codebook.pdf          # Exported REDCap codebook — all instruments
-│   │   ├── data-dictionary.csv       # REDCap data dictionary — importable
-│   │   └── instruments/
-│   │       ├── D1_eligibility.pdf
-│   │       ├── D2_demographics.pdf
-│   │       ├── D3_dose_escalation.pdf
-│   │       ├── D4_pk_sampling.pdf
-│   │       ├── D5_safety_labs.pdf
-│   │       ├── D6_ae_sae.pdf
-│   │       └── D7_symptom_diary.pdf
+│   │   ├── crf-codebook.pdf           # Exported REDCap codebook for all 7 instruments
+│   │   └── data-dictionary.csv        # REDCap data dictionary
+│   ├── python/
+│   │   ├── simulate_d1.py             # Eligibility (100 records)
+│   │   ├── simulate_d2.py             # Demographics & medical history (28 records)
+│   │   ├── simulate_d3a.py            # Dose assignment (28 records)
+│   │   ├── simulate_d3b.py            # SRC safety review (18 records)
+│   │   ├── simulate_d4.py             # PK sampling (144 records)
+│   │   ├── simulate_d5.py             # Safety labs and vitals (180 records)
+│   │   ├── simulate_d6.py             # Adverse events and SAEs (90 records)
+│   │   └── simulate_d7.py             # Volunteer symptom diary (72 records)
 │   ├── data/
-│   │   ├── simulated_pk_data.csv     # Simulated PK concentration-time data
-│   │   ├── simulated_ae_data.csv     # Simulated adverse event data
-│   │   └── simulated_demographics.csv
-│   ├── sql/
-│   │   ├── schema.sql                # Relational database schema from REDCap export
-│   │   ├── pk_queries.sql            # PK time-series queries — Cmax, AUC, half-life
-│   │   ├── ae_safety_listings.sql    # Adverse event listings and summaries
-│   │   ├── enrolment_queries.sql     # Screen failure, cohort fill, eligibility
-│   │   └── cohort_comparison.sql     # Dose cohort comparison queries
-│   ├── python/
-│   │   ├── pk_analysis.ipynb         # PK curve plotting, AUC, Cmax, half-life
-│   │   ├── safety_analysis.ipynb     # AE data cleaning, CTCAE grading summary
-│   │   └── requirements.txt
-│   └── powerbi/
-│       ├── phase1_dashboard.pbix     # Power BI file — 5 page dashboard
-│       └── screenshots/
-│           ├── pk_curve_page.png
-│           ├── safety_monitoring_page.png
-│           ├── enrolment_tracker_page.png
-│           ├── vitals_page.png
-│           └── dose_escalation_page.png
+│   │   └── [simulated CSVs from each instrument]
+│   ├── sql/                           # In progress
+│   ├── powerbi/                       # Planned
+│   └── sdtm/                          # Planned
 │
-├── phase2-menb-vaccine-omop/
-│   ├── omop/
-│   │   ├── crf_to_omop_mapping.md    # Field-level mapping from CRF to OMOP CDM
-│   │   ├── omop_schema_overview.md   # OMOP tables used and their clinical meaning
-│   │   └── insert_statements.sql     # SQL to load simulated data into OMOP tables
-│   ├── data/
-│   │   ├── simulated_ehr_data.csv    # Simulated EHR data in OMOP format
-│   │   └── simulated_titres.csv      # SBA antibody titre data
-│   ├── sql/
-│   │   ├── omop_cohort_queries.sql   # Cohort definition in OMOP standard
-│   │   ├── titre_analysis.sql        # SBA titre queries, fold-rise, seroconversion
-│   │   └── safety_omop.sql           # AE queries using OMOP condition_occurrence
-│   ├── python/
-│   │   ├── immunogenicity_analysis.ipynb  # GMT, seroconversion rate, titre plots
-│   │   └── requirements.txt
-│   └── powerbi/
-│       ├── phase2_dashboard.pbix
-│       └── screenshots/
-│           ├── titre_response_page.png
-│           ├── injection_site_heatmap.png
-│           └── seroconversion_kpi_page.png
-│
-├── phase3-menb-vaccine-federated/
-│   ├── shrine/
-│   │   ├── federated_query_concepts.md   # How SHRINE queries work without sharing data
-│   │   └── cohort_query_examples.sql     # Example i2b2 / SHRINE query structure
-│   ├── python/
-│   │   ├── survival_analysis.ipynb       # Kaplan-Meier, Cox regression, vaccine efficacy
-│   │   └── requirements.txt
-│   └── powerbi/
-│       ├── phase3_dashboard.pbix
-│       └── screenshots/
-│           ├── kaplan_meier_page.png
-│           ├── multisite_map_page.png
-│           └── forest_plot_page.png
-│
-└── docs/
-    ├── protocol-summary.md           # Plain language protocol summary
-    ├── data-management-plan.md       # DMP — data handling, storage, access
-    ├── crf-completion-guidelines.md  # Instructions for trial nurses completing CRF
-    ├── sae-reporting-sop.md          # SAE reporting procedure
-    └── glossary.md                   # Clinical and data terms defined
-```
+└── docs/                              # Project-level documentation
+## About this work
 
----
+I am an acute care registered nurse with five years of clinical experience, pharmacovigilance training (CCRPS APVAsC), the Oracle Explorer badge, and coursework in clinical data through Vanderbilt and Johns Hopkins. This portfolio documents my transition into clinical data management.
 
-## Phase 1 — Dexamethasone adjuvant · First-in-human PK study
+The ultimate goal of this research arc is a Phase 2 trial of dexamethasone combined with a MenB vaccine in patients with meningitis — testing whether the combination is tolerable in the patient population that would ultimately benefit from both. The Phase 2 work is more substantial than what is captured in this repository: real patients with active disease, more complex baseline conditions, wider AE profiles, and a different safety reporting environment than healthy-volunteer Phase 1 work.
 
-**Drug:** IV dexamethasone 0.15 mg/kg  
-**Population:** 20–30 healthy volunteers · three dose escalation cohorts  
-**Primary objective:** Safety, tolerability, and pharmacokinetic characterisation  
-**Data collection:** REDCap CRF — 7 instruments, 200+ fields, branching logic  
+I chose to start with the Phase 1 dexamethasone dose escalation as the stepping stone because this is my first end-to-end pipeline project. Building a focused single-agent Phase 1 first lets me establish the architectural patterns and discipline that the Phase 2 build will need, rather than starting from zero on a more complex study. Real engineering teams make this kind of trade-off every week. The Phase 1 work in this repository is a complete and self-contained portfolio piece that prepares me for the substantive Phase 2 work to come.
 
-### What this phase demonstrates
+## Development journal
 
-**REDCap CRF design** — 7 purpose-built instruments including eligibility with branching logic, a PK sampling schedule capturing blood draws at 8 timepoints per volunteer, a dose escalation log with sentinel dosing rules, a safety laboratory domain, and a volunteer symptom diary configured as a survey.
+PROGRESS.md is a detailed engineering journal documenting every architectural decision, every bug caught and fixed, and the clinical reasoning behind design choices across the build. It is a substantial document and represents the thinking behind the code. A reviewer interested in how I approach clinical data problems will find that thinking documented there.
 
-**PK data analysis** — plasma concentration-time curves built in Python using `matplotlib`, AUC calculation using `scipy.integrate.trapz`, Cmax extraction, half-life estimation, and dose-exposure scatter plots showing linearity across cohorts.
+## Roadmap
 
-**SQL querying** — relational schema built from REDCap export. Queries include time-series PK data extraction, window functions for Cmax per volunteer per cohort, AE safety listings joined to demographics, and cohort comparison aggregations.
+**This repository (Phase 1):** Simulated Phase 1 dose escalation of IV dexamethasone in healthy volunteers. Simulation complete. SQL pipeline, Power BI dashboards, and SDTM mapping capstone in progress.
 
-**Power BI dashboard** — 5 pages: PK concentration-time curve with individual volunteer lines and cohort mean overlay, safety monitoring with CTCAE grade distribution, enrolment tracker with screen failure analysis, vital signs time series, and dose escalation cohort summary.
+**Next project (Phase 2, separate repository):** Simulated Phase 2 tolerability and combination safety study of dexamethasone co-administered with a MenB vaccine in patients with meningitis. Will build on the architectural patterns established here (cross-instrument narrative consistency, disk-based cast pattern, section-by-section build methodology) and add the new complexity of patient-population trial design, combination AE adjudication, vaccine-related safety reporting, and Phase 2 efficacy endpoint framing.
 
----
+## License
 
-## Phase 2 — MenB vaccine · Preliminary efficacy · OMOP CDM
-
-**Vaccine:** Hypothetical novel MenB vaccine · IM injection · two-dose schedule  
-**Population:** 100–300 meningitis patients vaccinated post-recovery  
-**Primary objective:** Immunogenicity signal and safety in target population  
-**Data source:** Simulated EHR data mapped to OMOP Common Data Model  
-
-### What this phase demonstrates
-
-**OMOP CDM mapping** — field-level mapping from Phase 1 CRF variables to OMOP standard tables: `person`, `visit_occurrence`, `measurement`, `drug_exposure`, `condition_occurrence`, `observation`. SQL INSERT statements to load data into OMOP structure.
-
-**Immunogenicity analysis** — serum bactericidal antibody (SBA) titre analysis in Python: geometric mean titre calculation, seroconversion rate (≥4-fold rise from baseline), and titre trajectory plots across the dosing schedule.
-
-**SQL across OMOP** — multi-table JOINs across 5 OMOP tables, cohort definition queries, titre fold-rise calculation, and safety signal detection using `condition_occurrence`.
-
-**Power BI** — antibody titre response charts, injection site reaction heatmap (volunteers × days post-dose × severity), and seroconversion rate KPI cards.
-
----
-
-## Phase 3 — MenB vaccine · Definitive efficacy · Federated EHR
-
-**Population:** 1,000–5,000 patients · multiple hospital sites  
-**Primary objective:** Vaccine efficacy against confirmed MenB disease  
-**Data source:** Federated EHR queries via SHRINE / i2b2 — no central data sharing  
-
-### What this phase demonstrates
-
-**Federated query concepts** — SHRINE and i2b2 query architecture, patient counting without transferring individual records, site-level aggregation, and privacy-preserving data access for multi-site research.
-
-**Survival analysis** — Kaplan-Meier curves built with the `lifelines` Python library, Cox proportional hazards regression, vaccine efficacy calculation `(1 - relative risk) × 100`, and subgroup forest plots.
-
-**Multi-site Power BI** — geographic enrolment map, site-level performance comparison, Kaplan-Meier visualisation, and efficacy by subgroup forest plot.
-
----
-
-## Tools and technologies
-
-| Tool | Used for | Phase |
-|---|---|---|
-| REDCap | Electronic data capture — CRF design, branching logic, visit scheduling | 1 |
-| SQL (SQLite / PostgreSQL) | Relational schema, PK queries, AE listings, OMOP queries | 1, 2, 3 |
-| Python | PK analysis, immunogenicity, survival analysis, data cleaning | 1, 2, 3 |
-| Power BI | Clinical trial dashboards — PK, safety, enrolment, efficacy | 1, 2, 3 |
-| OMOP CDM | EHR data standardisation and interoperability | 2, 3 |
-| SHRINE / i2b2 | Federated query concepts for multi-site research | 3 |
-| GitHub | Version control, project documentation, portfolio presentation | All |
-
----
-
-## Clinical background
-
-This project is designed with clinical accuracy at its foundation. The disease biology, trial design decisions, CRF field choices, safety monitoring framework, and endpoint definitions are all grounded in real meningitis research practice — not invented for a data exercise.
-
-Key clinical concepts embedded in the project include the pathophysiology of bacterial meningitis (cytokine cascade, BBB breach, raised ICP), the pharmacological rationale for adjuvant dexamethasone (blunting post-antibiotic inflammatory surge), GCP-compliant data collection standards, CTCAE adverse event grading, ICH SAE definition and reporting timelines, and meningococcal vaccine immunogenicity assessment using serum bactericidal antibody assays.
-
----
-
-## Project status
-
-| Phase | CRF build | Data simulation | SQL | Python | Power BI |
-|---|---|---|---|---|---|
-| Phase 1 — Dexamethasone | 🔨 In progress | ⬜ Not started | ⬜ Not started | ⬜ Not started | ⬜ Not started |
-| Phase 2 — MenB vaccine OMOP | ⬜ Not started | ⬜ Not started | ⬜ Not started | ⬜ Not started | ⬜ Not started |
-| Phase 3 — Federated EHR | ⬜ Not started | ⬜ Not started | ⬜ Not started | ⬜ Not started | ⬜ Not started |
-
----
-
-## About the author
-
-Registered nurse with clinical experience in acute care and infectious disease management, pharmacovigilance training (APVAsC), and developing skills in clinical data management, health informatics, and research data science.
-
-This project represents the intersection of clinical knowledge and data skills — built to demonstrate that understanding *why* data exists is as important as knowing how to query and visualise it.
-
----
-
-*Built with REDCap · SQL · Python · Power BI · OMOP CDM*
+MIT
