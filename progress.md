@@ -1156,3 +1156,78 @@ Total simulated records: 660 across 18 volunteers and the 100-volunteer screenin
 SQL pipeline. Build a relational schema that loads all seven CSVs into a queryable database. Will demonstrate the data engineering side of clinical data management.
 
 ---
+## 2026-06-15 — Phase 1 SQL pipeline: schema architecture locked before build
+
+### What was built this session
+No SQL written yet, by design. This session locked the full schema architecture and load plan for the Phase 1 SQL pipeline before touching the database — engine, load tool, the layering, and the entity-aligned core table list, each with rationale. 
+### Engine and tooling locked
+- Oracle Database 21c Express Edition, version 21.3.0.0.0, confirmed via `sqlplus -v`.
+- All work targets the pluggable database XEPDB1, not the CDB root. Application schemas live in the PDB — the CDB root rejects non-`C##` users with ORA-65096, so every connection uses the service `.../XEPDB1`.
+- Driven from sqlplus, no GUI dependency. SQL*Loader for bulk CSV load.
+- Pre-build sanity check before any DDL: `SELECT name, open_mode FROM v$pdbs;` must show XEPDB1 as READ WRITE.
+
+### Three-tier architecture
+Reconciles the two things in tension — "load faithfully, identifiers as-is" versus "a clean normalised database."
+- Staging — faithful raw mirror of the eight export CSVs, one table per CSV, codes left exactly as REDCap exported them, identifiers untouched. This is where SQL*Loader lands data and where "load as-is" lives.
+- Core — the entity-aligned normalised model, shaped as a star schema. Dimensions describe who and when; fact tables record what happened and point back to the dimensions by foreign key.
+- Analytics — a thin layer of views that decode codes to labels via the dictionary codelists and shape output for Power BI and the SDTM capstone.
+
+The loader only ever touches staging. Relational quality is built in core. Decoding happens in analytics. Load mechanism and schema shape are independent — SQL*Loader does not split data, it lands one flat table per file; the normalising happens afterward in SQL.
+
+### Reference layer sourced from the REDCap exports
+- `data-dictionary.csv` (151 fields, all eight forms, full Choices column) → `field_metadata` + `codelist` tables in a P1_META schema. This is the authoritative source for every code→label mapping. Decoding is never done from memory or model output.
+- `event_mapping.csv` (11 events) → the `visit` dimension, loaded directly so event names keep their exact REDCap spelling (e.g. `day_0__dosing_arm_1` with the double underscore).
+- Coded values confirmed from the dictionary this session: `ae_relatedness` = 1 Unrelated / 2 Unlikely / 3 Possibly / 4 Probably / 5 Definitely; `sae_criterion` 3 = Hospitalisation. The earlier guess at the relatedness scale was retired by reading the dictionary rather than assuming.
+
+### Core table list — entity-aligned, with grain and keys
+Dimensions:
+- `subject` — grain: one screened volunteer. 100 rows. Surrogate PK `subject_id`, natural key `record_id` kept UNIQUE. Absorbs the three 1:1 instruments: identity and demographics from D1 (all 100), race/ethnicity/country/medical history from D2 (28 eligible, NULL for screen failures), randomisation status and cohort from D3a. Yields the 100 → 28 → 18 screening funnel as disposition attributes.
+- `visit` — grain: one trial event. 11 rows from `event_mapping.csv`. Surrogate PK `visit_id`, natural key `event_name` UNIQUE, plus label, day offset, sort order.
+
+One-to-one with subject:
+- `eligibility_assessment` — grain: one screened volunteer. 100 rows. PK `subject_id` (also FK). Holds the i1–i7 / e1–e9 inclusion-exclusion checklist, determination, and screen-failure reason. Split off the spine to keep `subject` lean; can be merged back if preferred.
+
+Exposure and disposition facts:
+- `dosing` — grain: one dosed volunteer. 18 rows. FK to `subject`. Administered dose, dose per kg, IMP batch and expiry, dosing signoff. Seed of SDTM EX.
+- `src_review` — grain: one randomised volunteer. 18 rows. FK to `subject`. Sentinel 48h pass, DLT observed, SRC decision and rationale, deviations.
+
+Findings facts:
+- `pk_concentration` — grain: one volunteer per timepoint. 144 rows. Composite natural key `record_id` + `timepoint`; FK to `subject` and `visit` (the D4 timepoint code is bridged to the event label via `event_mapping`). Already long; nothing to pivot.
+- `vital_sign` — grain (if long): one volunteer per visit per parameter. ~1,000 rows from D5. FK to `subject` and `visit`. [PENDING Fork B]
+- `lab_result` — grain (if long): one volunteer per lab event per analyte. ~900 rows from D5 (labs drawn at only three events). FK to `subject` and `visit`. Units and reference ranges sourced from the dictionary. [PENDING Fork B]
+- `diary_symptom` — grain (if long): one volunteer per diary visit per symptom. ~500 rows from D7. FK to `subject` and `visit`. [PENDING Fork B]
+
+Event fact:
+- `adverse_event` — grain: one reported AE. 23 rows (`ae_any` = 1 only). FK to `subject` and `visit`. Term, onset, CTCAE grade, relatedness, outcome, and SAE fields inline. The 67 `ae_any` = 0 placeholders stay in staging; the per-visit "any AE this visit?" assessment is derivable as a view if ever needed.
+
+### Key design decisions
+- Entity-aligned over instrument-aligned. Organise by real-world entity — volunteer, visit, measurement — not by CRF form. Queries are cleaner and it pre-positions the SDTM capstone, since the domain tables already echo DM, EX, PC, LB, VS, AE.
+- Subject spine drawn at 100, not 28 or 18. Account for every record in the CSV and keep the screening funnel inside the model. Screen-failure rows carry sparse D2 columns; that sparseness is honest, it reflects that full demographics were never collected on screen failures, not dirty data.
+- Identifiers loaded faithfully, per-instrument keys preserved in staging. D4 is keyed on `record_id` + `timepoint` (D4 has no event name); D5/D6/D7 on `record_id` + `event_name` + `redcap_repeat_instance`. The D4-versus-rest asymmetry is reconciled in core and views through `event_mapping`, never by rewriting staging.
+- `eligible_volunteers.csv` is D1 filtered to `eligibility_determination` = 1 → a view, not a table.
+- D6 loaded whole, all 90 rows. The 67 placeholders are "no AE this visit" assessments and stay in staging; the `adverse_event` core table filters to the 23 real events.
+- Cast files (`d5/d6/d7_cast_assignments`) are QA and validation reference only — used to assert the engineered narrative survived the pipeline (high responder ZA-CPT-P1-080, SAE volunteer ZA-CPT-P1-010), not clinical trial data.
+- Surrogate integer PKs everywhere, with the REDCap natural keys kept as UNIQUE for lineage, and enforced foreign keys on every fact table. The enforcement is the difference between a database and a folder of tables.
+
+### Data facts verified this session
+- Funnel: 100 screened → 28 eligible → 18 randomised (6 / 6 / 6 across the 2 / 4 / 8 mg cohorts) + 10 reserve.
+- Demographics are split across instruments: D1 carries dob, age, sex, weight, height, bmi for all 100; D2 adds race, ethnicity, country, and medical history for the 28 eligible only.
+- D2 medical history is stored as flat `*_any` + `*_details` pairs, not a repeating group — so no `medical_history` child table is needed; it stays as subject attributes.
+- D5 is the one genuinely wide instrument (34 columns): vitals at all 10 events, the full lab panel at only 3.
+- D6: 23 `ae_any` = 1, 67 placeholders. SAE = ZA-CPT-P1-010, acute gastroenteritis, Grade 3, Unrelated, hospitalisation criterion. High responder ZA-CPT-P1-080 = hot flushes (G1) plus transaminase elevation (G1, Probably related) — matches the engineered cross-instrument narrative.
+- D4: eight timepoints, single analyte. Pre-dose and 48h read BLQ at the assay floor, clean rise-and-fall between.
+
+### Open decision carried into next session
+Fork B — wide versus long for D5 (labs and vitals) and D7 (diary). Long means tall Findings-class tables (`vital_sign`, `lab_result`, `diary_symptom`), one row per measurement: best for Power BI slicers and it pre-builds SDTM LB/VS/FA, at the cost of heavier transform. Wide means one row per subject-event with analytes as columns: less transform, but it fights Power BI and is not SDTM-shaped. Current lean is long. Not locked — to be decided before those three tables are built. `pk_concentration` and `adverse_event` are unaffected, being already long and event-shaped.
+
+### What I learned this session
+- Load mechanism and schema shape are independent axes. SQL*Loader lands one flat staging table per CSV; the normalising into keyed tables happens afterward in SQL, not in the loader.
+- Spine — the central table everything else hangs off, here `subject`. Primary key identifies a row; a natural key comes from the data (`record_id`), a surrogate key is an invented counter with no outside meaning.
+- A foreign key is a "see-also" pointer — it holds another table's key to link rows. A one-to-many relationship is the shape that forces a separate child table; the moment "many" appears, it earns its own table.
+- Dimension table = a roster of things that exist (`subject`, `visit`). Fact table = a record of things that happened, pointing back at the dimensions. Facts arranged around dimensions is a star schema, which is exactly the shape Power BI consumes.
+- Grain — what one row means. Defining it is the first move on any fact table, and it hands you the key. When the grain needs two columns to be unique (volunteer + timepoint), the primary key is a composite key.
+
+### Next milestone
+Build tier one. Open XEPDB1, create the P1_STAGING schema, write one SQL*Loader control file per CSV, and load the eight instrument CSVs plus the dictionary and event map as-is. Verify row counts against the source (100 / 28 / 28 / 18 / 144 / 180 / 90 / 72). Then settle Fork B and build the core dimensions (`subject`, `visit`) followed by the fact tables.
+
+---
