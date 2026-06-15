@@ -1,6 +1,8 @@
 # Meningitis Research Pipeline
 
-A clinical data engineering portfolio documenting the transition from registered nursing to clinical data management. Built as a two-phase journey toward a Phase 2 trial of dexamethasone combined with a MenB vaccine in meningitis patients. This repository houses the Phase 1 stepping-stone (complete simulation phase, downstream work in progress) and points toward the Phase 2 work ahead.
+This repository serves as a clinical data engineering portfolio project demonstrating the end-to-end lifecycle of clinical trial data. It combines clinical domain knowledge gained through nursing practice with data management, database design, programming, and standards-based workflows used in modern clinical research.
+
+The project simulates a Phase I meningococcal vaccine trial and is designed to showcase skills in REDCap data collection, Python-based data generation, relational database design, SQL analysis, clinical data review, and CDISC SDTM implementation.
 
 ## Phase 1 — Dexamethasone dose escalation in healthy volunteers
 
