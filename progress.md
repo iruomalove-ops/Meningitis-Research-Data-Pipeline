@@ -434,7 +434,7 @@ Build the D2 schema template and generate demographics fields race ethnicity vit
 ## 2026-05-15 — D2 simulation script complete — 20 demographics and medical history records
 
 ### What was built
-Built simulate_d2.py from scratch using the same pattern locked in with simulate_d1.py. The script reads d1_eligibility.csv filters to the 20 eligible volunteers and generates a complete D2 record for each one. Output saved to d2_demographics_and_medical_history.csv ready for the next pipeline stage.
+Built simulate_d2.py from scratch using the same pattern locked in with simulate_d1.py. The script reads d1_eligibility.csv filters to the 20 eligible volunteers and generates a complete D2 record for each one. Output saved to d2_demographics_medical_history.csv ready for the next pipeline stage.
 
 ### The functional pieces
 - File docstring and imports of random csv and string modules
@@ -468,7 +468,7 @@ Built simulate_d2.py from scratch using the same pattern locked in with simulate
 - PI assessment derived from structured fields as either Excellent health or Good health
 
 ### Output produced
-d2_demographics_and_medical_history.csv with 20 rows matching the eligible volunteers from D1. Each row has 25 fields populated with realistic clinically appropriate values.
+d2_demographics_medical_history.csv with 20 rows matching the eligible volunteers from D1. Each row has 25 fields populated with realistic clinically appropriate values.
 
 ### Cumulative enrolment funnel status
 - D1 100 screened generated as d1_eligibility.csv
@@ -543,7 +543,7 @@ Closed the referential integrity gap discovered earlier where D1 had a unique id
 Renamed the existing site_id variable to record_id everywhere it appears in the script. The variable name now matches REDCaps native primary key column convention. The values stay as ZA-CPT-P1-NNN format because only one site means site_id was misleading anyway. The d1_eligibility.csv now uses record_id as its first column header.
 
 ### Changes to simulate_d2.py
-Added record_id as the first field in d2_template. Updated the make_d2_record function return statement to pull record_id from the d1_record parameter using d1_record[record_id]. The make_d2_record function already received the d1_record as input so the data was available, we just had to use it. The d2_demographics_and_medical_history.csv now has record_id as its first column with values matching the eligible volunteers from D1.
+Added record_id as the first field in d2_template. Updated the make_d2_record function return statement to pull record_id from the d1_record parameter using d1_record[record_id]. The make_d2_record function already received the d1_record as input so the data was available, we just had to use it. The d2_demographics_medical_history.csv now has record_id as its first column with values matching the eligible volunteers from D1.
 
 ### Verification
 Opened the regenerated d2 CSV. First column header is record_id. First few records show values like ZA-CPT-P1-001 ZA-CPT-P1-004 ZA-CPT-P1-005. These match the eligible volunteers from D1. Twenty rows of data plus one header row. The CSVs can now be joined on record_id in SQL.
@@ -633,7 +633,7 @@ Completed simulate_d3a.py through all 9 sections. The script reads the D2 demogr
 
 ### The complete pipeline now produces three CSVs from one starting seed
 - d1_eligibility.csv with 100 screened volunteers and eligibility outcomes
-- d2_demographics_and_medical_history.csv with 28 records for eligible volunteers
+- d2_demographics_medical_history.csv with 28 records for eligible volunteers
 - d3a_dose_assignment.csv with 28 records of which 18 are Randomised and 10 are Reserve
 
 ### Architectural patterns locked in
