@@ -1231,3 +1231,177 @@ Fork B — wide versus long for D5 (labs and vitals) and D7 (diary). Long means 
 Build tier one. Open XEPDB1, create the P1_STAGING schema, write one SQL*Loader control file per CSV, and load the eight instrument CSVs plus the dictionary and event map as-is. Verify row counts against the source (100 / 28 / 28 / 18 / 144 / 180 / 90 / 72). Then settle Fork B and build the core dimensions (`subject`, `visit`) followed by the fact tables.
 
 ---
+---
+## 2026-06-16 — SDTMIG Chapter 2 complete — observation model and domain architecture understood
+
+### What was learned
+Completed Chapter 2 of the SDTM Implementation Guide. This chapter fundamentally changed how I think about clinical data. Before this point SDTM looked like a large collection of domains and variables to memorise. After working through the chapter it became clear that SDTM is really a data modelling framework built around clinical observations.
+
+### The observation model
+The central concept is that SDTM is built around observations collected about study subjects. Every row in an SDTM dataset represents a single observation and every column describes some aspect of that observation.
+
+The observation framework can be reduced to four questions:
+
+- Who is this about? → Identifier variables
+- What is being observed? → Topic variables
+- When did it happen? → Timing variables
+- What additional details describe it? → Qualifier variables
+
+Using the adverse event example from the guide:
+
+Subject 101 had mild nausea on Study Day 6.
+
+- Subject 101 = Identifier
+- Nausea = Topic
+- Day 6 = Timing
+- Mild = Qualifier
+
+This became the mental model that unlocked the rest of the chapter.
+
+### Variable roles understood
+Worked through the five SDTM variable roles and their purpose.
+
+- Identifier variables identify the study subject domain and record
+- Topic variables define the actual focus of the observation
+- Timing variables describe when the observation occurred
+- Qualifier variables add descriptive detail
+- Rule variables support Trial Design datasets
+
+The most important insight was that variables are not grouped by data type but by the job they perform within an observation.
+
+### Qualifier hierarchy understood
+The qualifier subclasses initially seemed abstract until working through examples.
+
+- Result Qualifiers answer the question raised by the topic
+- Record Qualifiers describe the observation as a whole
+- Variable Qualifiers describe another variable
+- Grouping Qualifiers organise related observations
+- Synonym Qualifiers provide alternative names for the same concept
+
+Using a laboratory result:
+
+SUBJ005 CRP Day 7 12 mg/L
+
+- CRP = Topic
+- 12 = Result Qualifier
+- mg/L = Variable Qualifier
+
+This made the distinction between result values and metadata much clearer.
+
+### The three General Observation Classes
+Learned that most SDTM domains belong to one of three classes.
+
+#### Interventions
+Something done to the subject.
+
+Examples:
+- Study drug exposure
+- Vaccination
+- Concomitant medication
+
+Question answered:
+What did we do?
+
+#### Events
+Something that happened to the subject.
+
+Examples:
+- Adverse events
+- Medical history
+- Study completion
+
+Question answered:
+What happened?
+
+#### Findings
+Something measured or assessed.
+
+Examples:
+- Laboratory tests
+- Vital signs
+- PK concentrations
+- Questionnaires
+
+Question answered:
+What did we observe?
+
+This became the fastest way to classify new data.
+
+### Special Purpose Domains understood
+Learned why some domains sit outside the three observation classes.
+
+- DM describes the subject
+- SV describes visits attended
+- SE describes study phases
+- CO stores comments
+
+The important distinction is that these domains support the trial structure itself rather than recording observations.
+
+### Relational database connection finally clicked
+The biggest breakthrough of the chapter was understanding the relationship between relational databases and SDTM.
+
+A relational database stores information in separate linked tables using primary keys and foreign keys.
+
+Example:
+
+SUBJECT
+VISIT
+LAB_RESULT
+EXPOSURE
+ADVERSE_EVENT
+
+SDTM represents the same information as submission-ready flat datasets.
+
+The insight was that SDTM is not trying to replace a relational database. It is a standardised way of presenting the data after collection.
+
+Operational Database
+→ SDTM
+→ ADaM
+→ Analysis
+
+The goal is not to build databases that look exactly like SDTM. The goal is to build databases that map naturally into SDTM.
+
+### Data modelling lesson locked in
+A principle emerged repeatedly throughout the chapter:
+
+If something can happen many times it usually deserves its own table.
+
+Examples:
+- One subject can have many lab results
+- One subject can have many PK samples
+- One subject can have many adverse events
+- One subject can have many doses
+
+This naturally produces tall tables rather than wide tables and aligns closely with both relational database design and SDTM observation modelling.
+
+### Custom domain design understood
+Worked through the SDTM process for creating a new domain.
+
+Key lessons:
+
+- Reuse existing domains whenever possible
+- Organise data by topic not collection method
+- Do not create domains based on time
+- Do not create domains based on endpoint importance
+- Select the correct observation class first
+- Add identifiers topic timing and qualifiers in that order
+
+The process mirrors database design more closely than expected.
+
+### Architectural lesson
+The people who designed SDTM were solving the same problem database architects solve:
+
+How do we represent clinical observations consistently without duplication while preserving meaning?
+
+Understanding that connection made the guide far easier to read because the domains stopped looking arbitrary and started looking like modelling decisions.
+
+### Next milestone
+Begin Chapter 3 — Using the CDISC Domain Models in Regulatory Submissions.
+
+Primary objectives:
+
+- Understand dataset-level metadata
+- Learn how DOMAIN values drive dataset identity
+- Understand Define-XML structure and purpose
+- Learn how SDTM datasets are formally described for regulatory submission
+- Begin reading domain specifications as metadata rather than as lists of variables
