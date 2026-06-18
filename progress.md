@@ -1405,3 +1405,48 @@ Primary objectives:
 - Understand Define-XML structure and purpose
 - Learn how SDTM datasets are formally described for regulatory submission
 - Begin reading domain specifications as metadata rather than as lists of variables
+
+## 2026-06-18 — Phase 1 SQL pipeline: staging tier stood up, D1 loaded (100 rows)
+
+### What was built this session
+The Oracle environment was brought online after a multi-stage listener and PDB fight, the P1_STAGING schema was created, and the first staging table — D1 — was loaded with all 100 screening records via SQL*Loader. A clean-repo loader layout was established and the D1 control file committed and pushed. Tier one is real, with one table in and the load pattern proven for the remaining seven.
+
+### Environment correction — Enterprise Edition on ORCLPDB, not XE
+The install is Oracle 21c Enterprise Edition, database ORCL, pluggable database ORCLPDB — not Express Edition / XEPDB1 as first assumed. All connections target the service `.../ORCLPDB`. Confirmed via the startup banner and `SHOW PDBS`.
+
+### Incident — listener and database registration would not come up
+A chain of connection failures, every one rooted in stale addresses left behind by a past machine rename (DESKTOP-UNGAQOD). Recorded because each is a standard Oracle-on-laptop trap.
+- ORA-12541 no listener — the TNS listener service was stopped. `net start` reported a silent failure; `lsnrctl start` gave the real cause.
+- TNS-12545 target host does not exist — `listener.ora` had HOST pinned to a dead IP, 10.0.0.35. Fixed by editing `C:\oracle\homes\OraDB21Home1\network\admin\listener.ora` to `HOST = localhost`.
+- PDB MOUNTED, not open — full Oracle leaves PDBs closed on startup. `ALTER PLUGGABLE DATABASE ORCLPDB OPEN`, then `SAVE STATE` so it reopens on every reboot.
+- ORA-12514 service not known — the database was not registering ORCLPDB with the listener. Root cause: `LOCAL_LISTENER` was set to the alias `LISTENER_ORCL`, resolving through a stale `tnsnames` entry. Fixed with `ALTER SYSTEM SET LOCAL_LISTENER='(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))' SCOPE=BOTH;` then `ALTER SYSTEM REGISTER`. Service "orclpdb" then showed READY.
+
+### Lesson learned
+- A machine rename leaves the old host/IP in at least three places: `listener.ora`, `LOCAL_LISTENER`, and `tnsnames.ora`. Point each at `localhost`, never a literal IP, so a network change cannot break it again.
+- `net start` hides errors; `lsnrctl start` / `lsnrctl status` give the real diagnosis. Go to the tool's own diagnostics, not the Windows service wrapper.
+- `sql` and `sqlplus` are different programs — `sql` (SQLcl) crashed on a Java class error; `sqlplus` is the reliable client.
+- `CONNECT / AS SYSDBA` logs in through Windows with no password and no listener — the way in when the listener is down.
+
+### Staging schema and D1 table
+- `CREATE USER p1_staging` in ORCLPDB — in Oracle the user is the schema. Granted CREATE SESSION, CREATE TABLE, and QUOTA UNLIMITED ON USERS.
+- `d1_eligibility` staging table: all 26 columns typed VARCHAR2, faithful to the CSV, raw codes untouched. Staging-tier discipline — nothing can be rejected over a type; cleaning happens later in core.
+- Loaded with SQL*Loader: 100 rows, 0 rejected.
+
+### Bug caught — table built from wrong column names
+The first `CREATE TABLE` used generic `i1`–`i7` / `e1`–`e9` placeholder names and 28 columns. The real D1 header has 26 columns with specific names: inclusion `i1_age, i2_bmi, i3_health, i6_comply, i7_consent` (i4/i5 where removed due to data redundancy in the instrument ) and exclusion `e1_cyp3a4`…`e9_previoustrial`. Caught before loading, dropped and rebuilt from the actual header. Lesson re-locked: read the real header before writing any DDL — never presume or assume  column names.
+
+### Loader pattern locked for the remaining seven tables
+- Portable control files in `sql/staging/*.ctl`: column mapping only, no `INFILE`/`BADFILE`/`DISCARDFILE` baked in. File locations supplied on the `sqlldr` command line via `data=`, `log=`, `bad=`, `discard=`.
+- `OPTIONS (SKIP=1)` skips the header; `CHARACTERSET AL32UTF8`; `FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'` for quoted free-text; `TRAILING NULLCOLS`; `TRUNCATE` so re-runs stay idempotent; explicit `CHAR(n)` on long free-text fields to beat the loader's 255-character default.
+- Write control files with a PowerShell here-string and `Set-Content -Encoding ASCII`, not Notepad — Notepad left `d1.ctl` at 0 bytes and the load failed SQL*Loader-501 / 561 until the file was rewritten.
+- `.gitignore` excludes `*.log`, `*.bad`, `*.dsc`; the `.ctl` files are committed as real pipeline artifacts.
+
+### Verified this session
+- D1 row count: 100.
+- Screening funnel intact in the database: `eligibility_determination` 1 = 28, 2 = 72, summing to 100. The funnel the whole schema is built around is now real in Oracle, not just on paper.
+- Raw REDCap codes preserved in staging (`sex_at_birth` 1/2, `eligibility_determination` 1/2). Decoding deferred to analytics views, as designed.
+
+### Next milestone
+Load D2 (demographics and medical history, 28 rows) with the locked pattern: read the header, build the VARCHAR2 staging table, write `sql/staging/d2.ctl`, run `sqlldr`. Verify 28 rows and that all 28 join back to D1 records marked eligible, with no orphans. Then D3a through D7.
+
+---
