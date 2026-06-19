@@ -1450,3 +1450,36 @@ The first `CREATE TABLE` used generic `i1`–`i7` / `e1`–`e9` placeholder name
 Load D2 (demographics and medical history, 28 rows) with the locked pattern: read the header, build the VARCHAR2 staging table, write `sql/staging/d2.ctl`, run `sqlldr`. Verify 28 rows and that all 28 join back to D1 records marked eligible, with no orphans. Then D3a through D7.
 
 ---
+## 2026-06-19 — Phase 1 SQL pipeline: staging tier complete, all 8 tables loaded (660 rows)
+
+### What was built this session
+The full staging tier is loaded. All eight instrument CSVs are in Oracle as faithful VARCHAR2 mirror tables, 660 rows total, each load verified and idempotent. Eight portable SQL*Loader control files are committed under sql/staging/. Tier one is done; the core build is next.
+
+### Final row counts — verified in-database
+d1 100, d2 28, d3a 28, d3b 18, d4 144, d5 180, d6 90, d7 72. Total 660. Confirmed with a single UNION ALL roll-up across all eight tables.
+
+
+### Staging schema and load pattern
+- p1_staging user created in ORCLPDB (user = schema in Oracle); granted CREATE SESSION, CREATE TABLE, QUOTA UNLIMITED ON USERS.
+- Every staging table is all-VARCHAR2, faithful to the CSV, raw REDCap codes preserved untouched. Decoding is deferred to the analytics layer.
+- Portable control files in sql/staging/*.ctl: column mapping only, no baked-in paths; INFILE/log/bad/discard supplied on the sqlldr command line.
+- Standard options locked: OPTIONS (SKIP=1), CHARACTERSET AL32UTF8, FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"', TRAILING NULLCOLS, TRUNCATE for idempotent re-runs, explicit CHAR(n) on long free-text fields to beat the 255-char default.
+- Control files written via PowerShell here-string + Set-Content -Encoding ASCII. Notepad left d1.ctl at 0 bytes (SQL*Loader-501/561) until rewritten — here-string is the reliable method.
+- .gitignore excludes *.log, *.bad, *.dsc; .ctl files committed as pipeline artifacts.
+
+### Verified this session — structure and narrative intact in SQL
+- Screening funnel: eligibility_determination 1=28, 2=72, total 100.
+- Randomisation: 6/6/6 across cohorts 1/2/3 plus 10 reserve (blank cohort) = 28.
+- SRC: src_decision = 1 for all 18 reviews, all linking to randomised volunteers — every cohort gate opened, no DLT halted escalation.
+- PK: D4 grain 18x8; volunteer ZA-CPT-P1-080 curve correct — BLQ pre-dose, peak 126.65, decay to BLQ by 48h, blq flag set only at the floor readings.
+- Labs: D5 grain 18x10; 080 ALT normal at screening (25) and 48h (22), abnormal at day-7 (86) with any_lab_abnormal=1 — a delayed transaminase signal, lab root of the D6 AE.
+- AEs: D6 split 23 real / 67 placeholder. 080 = Hot flushes (G1) + Transaminase elevation (G1, relatedness 4). 010 = Acute gastroenteritis, grade 3, relatedness 1 (unrelated), is_sae 1, criterion 3 (hospitalisation) — the serious-but-unrelated SAE that did not stop escalation.
+- The cross-instrument narrative (D5 lab signal -> D6 AE; unrelated SAE -> D3b escalation proceeding) is intact and traceable by record_id across staging tables.
+
+### Two-window discipline
+sqlplus (SQL>) for DDL and verification queries; PowerShell/VS Code terminal (PS>) for here-strings and sqlldr. Crossing them throws errors — keep them separate. Confirm every load actually ran via its log/summary rather than inferring from a row count, since TRUNCATE makes a stale table look identical to a fresh load.
+
+### Next milestone
+Build the core tier. Start with the dimensions — subject (100, drawn from D1+D2+D3a) and visit (from event_mapping) — then the fact tables with surrogate keys and enforced foreign keys. Settle Fork B (wide vs long for D5 labs/vitals and D7 diary) before building those domain tables.
+
+---
