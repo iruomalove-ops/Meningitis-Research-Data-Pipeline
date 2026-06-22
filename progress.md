@@ -1483,3 +1483,114 @@ sqlplus (SQL>) for DDL and verification queries; PowerShell/VS Code terminal (PS
 Build the core tier. Start with the dimensions — subject (100, drawn from D1+D2+D3a) and visit (from event_mapping) — then the fact tables with surrogate keys and enforced foreign keys. Settle Fork B (wide vs long for D5 labs/vitals and D7 diary) before building those domain tables.
 
 ---
+## 2026-06-22 — SDTMIG Chapters 3: observation model, metadata architecture, and submission framework understood
+
+### What was learned this session
+Completed SDTMIG Chapter 3, The major breakthrough was understanding that SDTM is not a database design standard but a submission standard built around clinical observations. The relationship between normalized relational databases and SDTM domain structures is now much clearer.
+
+### Observation model understood
+- SDTM is built around observations collected about study subjects.
+- Every observation can be decomposed into:
+  - Identifier variables (Who?)
+  - Topic variables (What?)
+  - Timing variables (When?)
+  - Qualifier variables (Additional detail)
+- The observation model became the common structure underlying all domains.
+
+### General Observation Classes understood
+- Interventions = something done to the subject.
+- Events = something that happened to the subject.
+- Findings = something measured or assessed.
+- Classification now driven by the questions:
+  - What did we do?
+  - What happened?
+  - What did we observe?
+
+### Special Purpose domains understood
+- DM describes the subject.
+- SV describes visits attended.
+- SE describes study phases or study elements.
+- CO stores comments and free-text narrative information.
+- These domains provide study context rather than observations.
+
+### Relational database and SDTM connection established
+- SDTM Findings domains use the same one-observation-per-row philosophy as normalized relational databases.
+- Wide structures:
+  - ALT, AST, CRP as separate columns
+- Vertical structures:
+  - TEST + RESULT as rows
+- This mirrors the normalized designs planned for the core Oracle schema.
+
+### Key architecture concepts clarified
+- Natural key = business facts that uniquely identify an observation.
+- Composite key = key composed of multiple columns.
+- Surrogate key = artificial identifier created for row management.
+- Primary key = identifier chosen by the database to uniquely identify rows.
+- Observation uniqueness is determined by protocol and business rules rather than by inspecting data values.
+
+Examples discussed:
+- PK sample: Subject + Timepoint
+- Laboratory result: Subject + Visit + Test
+
+### Metadata architecture understood
+Three metadata layers identified.
+
+#### Dataset Metadata
+Describes datasets.
+
+Examples:
+- Dataset name
+- Structure
+- Natural key definition
+
+#### Variable Metadata
+Describes variables.
+
+Examples:
+- LBTESTCD
+- LBORRES
+- LBSTRESN
+
+#### Value-Level Metadata
+Describes specific values within variables.
+
+Examples:
+- ALT
+- CRP
+- HEIGHT
+- BMI
+
+This explains how SDTM can maintain a highly normalized vertical structure while still preserving test-specific definitions, units, origins, and controlled terminology.
+
+### Conformance requirements understood
+Conformance requires:
+
+- Standard domain names
+- Standard variable names
+- Standard datatypes
+- Controlled terminology
+- Required and Expected variables
+- Proper Identifier, Topic, Timing, and Qualifier structure
+- Compliance with domain-specific assumptions and business rules
+
+Conformance is therefore more than variable naming; it is adherence to the complete SDTM modelling framework.
+
+### Mental model established
+Clinical Reality
+→ Data Collection
+→ Observations
+→ Variables
+→ Domains
+→ Relational Database
+→ SDTM Datasets
+→ Metadata
+→ Define-XML
+→ Conformance Review
+→ Regulatory Submission
+
+This workflow now serves as the reference model for understanding future SDTM domains and metadata specifications.
+
+### Next milestone
+Continue Chapter 4.
+
+---
