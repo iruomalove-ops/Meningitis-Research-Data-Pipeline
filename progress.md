@@ -1594,3 +1594,32 @@ This workflow now serves as the reference model for understanding future SDTM do
 Continue Chapter 4.
 
 ---
+## 2026-06-19 — Phase 1 core tier: entity-aligned schema fully planned
+
+### What was decided this session
+The complete core-tier schema was designed on paper before any DDL — every table, its grain, and a single home for every column, with no overlaps so joins stay clean. The driving rule throughout: each fact lives in exactly one table; other tables reach it by joining on record_id or visit, never by copying. Build starts next session from this plan.
+
+### The placement rule that settled everything
+A field's home is decided by grain, not by data type: how many times was it measured per person? Measured once and never repeats -> it is a stable attribute, lives on the entity's dimension table. Recurs across visits -> it is a finding, lives in a fact table with a visit link. This is the same logic SDTM uses (subject characteristics vs VS/LB findings). It resolved every borderline column this session.
+
+### Person-level cluster — four tables, split by population and concern
+Original instinct was one wide subject table; split into four because mixing identity, screening verdict, and trial-entry conflates different events on different populations. The tell that two things belong in separate tables: different row counts.
+- subject — 100 rows, one per screened person. Identity and one-time measurements: record_id (natural key) + surrogate subject_id, dob, age_years, sex_at_birth, weight_kg, height_cm, bmi (from D1), race, ethnicity, country_birth, initials (from D2).
+- eligibility — 100 rows, one per screened person. The screening verdict and checklist: i1_age/i2_bmi/i3_health/i6_comply/i7_consent, e1_cyp3a4..e9_previoustrial, eligibility_determination, screen_failure_reason, screen_failure_narrative, screening_date, screened_by. Joins to subject on record_id.
+- enrollment — 18 rows (randomised only; reserve optional). The trial-entry event: enrolment_status, cohort, cohort_position, is_sentinel, cohort_open_date, planned_dose_mg, dose_per_kg, imp_batch, imp_expiry, pi_dosing_signoff. Exists only for those who entered — the 100-vs-18 asymmetry is real information a combined table could only show as blanks.
+- medical_history — 28 rows (eligible only). pmh/surgery/allergy/med any+details, family_history, lifestyle (alcohol_units, caffeine_cups, exercise_freq, vaccine_uptodate, recent_vaccine), pi_assessment. Kept separate, not folded into eligibility: eligibility is 100 rows, medical history is 28 — different population, different table.
+
+### Two placement traps caught by checking the data, not the column name
+- Screening vitals (sbp_screen..spo2_screen in D2) looked like yes/no screening fields by name; the values are real numeric measurements (e.g. SBP 123, temp 37.2), identical in kind to D5 on-study vitals. So they are vitals, not eligibility fields — they go to vital_sign, tagged to the screening visit. Lesson re-locked: when column name and data disagree, the data wins.
+- Height/weight/BMI are numbers but were measured once at screening and never repeat, so they are attributes on subject, not findings in vital_sign. Weight could be a finding in a trial that re-measures it; in this data it appears only in D1, once — so grain places it on subject. (Could later add the single screening weight to vital_sign as a baseline VS record to anticipate SDTM/Phase 2; deferred.)
+
+### Dimension and fact tables
+- visit — dimension, 11 rows from event_mapping.csv. Surrogate visit_id, event_name natural key. Every time-based fact links here.
+- dosing — 18 rows, from D3a, FK subject. (Note: dose fields overlap with enrollment; to resolve at build — exposure event vs enrolment attributes.)
+- src_review — 18 rows, from D3b, FK subject.
+- pk_concentration — 144 rows, from D4, FK subject + visit. Already long in staging.
+- adverse_event — 23 rows (ae_any=1 only), from D6, FK subject + visit. The 67 placeholders stay in staging.
+
+### findings tables are LONG
+vital_sign, lab_result, diary_symptom built long: one row per single measurement (volunteer, visit, test) with a test-name column and a value column, not one row of many columns.
+- Why long: blank cells structurally cannot occur (a row exists only when a measurement happened — solves the empty-lab-cell problem seen in 080's D5 PK-timepoint rows); it is the shape Power BI wants (one value + one test column drives every slicer); it
