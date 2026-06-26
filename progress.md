@@ -1652,3 +1652,20 @@ subject: 100 rows, one per screened volunteer. race/ethnicity populated for the 
 ### Next milestone
 Build eligibility (100), enrollment (18), medical_history (28), and the visit dimension, each as its own sql/core/*.sql following the subject pattern. Resolve the open enrollment-vs-dosing dose-field overlap when enrollment is built.
 ---
+## 2026-06-24 — Core tier: enrollment (28) and dosing (18) built from D3a
+
+### What was built
+Staging D3a split into two core tables on the different-row-count rule: enrollment (28 rows, all enrolled incl. reserve — the randomisation facts) and dosing (18 rows, randomised only — the exposure facts). Same source, two entities.
+
+### Decisions
+- cohort_open_date kept as-is in dosing, not renamed. CDM convention: preserve the source name through every layer and explain the placement in the SOP, rather than mutate a name that traces cleanly from CRF to core.
+- dose_per_kg typed NUMBER(6,4) to preserve its four-decimal per-volunteer precision; default sizing would have rounded it to 0.1.
+
+### New skill — first enforced foreign keys
+Both tables declare record_id as a FOREIGN KEY referencing subject(record_id). Tested live: an insert for a non-existent volunteer correctly threw ORA-02291 (parent key not found). Referential integrity now enforced by the database, not convention. Consequence: the core has a build order — subject before anything that references it.
+
+### Verified
+enrollment: 18 Randomised / 10 Reserve. dosing: 6/6/6 across 2/4/8 mg, dose_per_kg full precision.
+
+### Next milestone
+eligibility (100, from D1), then medical_history (28, from D2), then the visit dimension.
