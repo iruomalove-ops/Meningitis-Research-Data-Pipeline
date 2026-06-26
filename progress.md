@@ -1622,4 +1622,33 @@ Original instinct was one wide subject table; split into four because mixing ide
 
 ### findings tables are LONG
 vital_sign, lab_result, diary_symptom built long: one row per single measurement (volunteer, visit, test) with a test-name column and a value column, not one row of many columns.
-- Why long: blank cells structurally cannot occur (a row exists only when a measurement happened — solves the empty-lab-cell problem seen in 080's D5 PK-timepoint rows); it is the shape Power BI wants (one value + one test column drives every slicer); it
+- Why long: blank cells structurally cannot occur (a row exists only when a measurement happened — solves the empty-lab-cell problem seen in 080's D5 PK-timepoint rows); it is the shape Power BI wants (one value + one test column drives every slicer); 
+---
+
+## 2026-06-24 — Core tier: file-based DDL workflow set up, subject table built (100 rows)
+
+### What was built this session
+Moved from typing DDL at the prompt to writing saved .sql build scripts run through Oracle's VS Code extension, and built the first core table — subject — clean at 100 rows with its keys enforced. New folders sql/core/ and sql/setup/ hold the build scripts so the whole core is reproducible from the repo.
+
+### Tooling — Oracle SQL Developer extension for VS Code
+- Connected via Oracle's official extension (Basic connection, localhost:1521, Service Name ORCLPDB, user p1_staging). The two stale connection profiles it carried — sys@10.0.0.35 from the old machine name — were deleted; the live one points at localhost. Same stale-IP ghost as the listener fight, in a third place.
+- Workflow discipline locked: build files (sql/core/*.sql) hold only drop/create/alter/insert/commit. Verification queries run separately by hand in a throwaway scratch.sql, never saved into the build file. Mixing the two earlier caused tangled, mis-ordered runs.
+
+### subject build pattern (the template for the remaining core tables)
+- DROP TABLE subject CASCADE CONSTRAINTS at the top so the script is re-runnable; CASCADE CONSTRAINTS so it still drops once child tables FK into it later. First run throws ORA-00942 (nothing to drop) — expected and harmless.
+- subject_id NUMBER GENERATED ALWAYS AS IDENTITY as the surrogate key, defined inside CREATE TABLE.
+- Named constraints: pk_subject (PRIMARY KEY on subject_id), uq_subject_record_id (UNIQUE on record_id). Naming them means a future violation reports a meaningful name, not a SYS_C string.
+- Populated with INSERT...SELECT: D1 LEFT JOIN D2 on record_id, so all 100 D1 rows survive and the 72 screen-failures get NULL D2 columns. dob converted from ISO text with TO_DATE(d1.dob, 'YYYY-MM-DD'); numbers coerce to NUMBER automatically.
+- Core types proper now, not staging's all-VARCHAR2: dob DATE, age NUMBER(3), weight/height NUMBER(5,1), bmi NUMBER(4,1). Raw codes (sex_at_birth, race) stay as codes — decoded later in views.
+
+### Bugs caught and fixed
+- ORA-01031 insufficient privileges on the identity column. Identity columns create a hidden sequence underneath, which needs CREATE SEQUENCE — never granted to p1_staging. Fixed with GRANT CREATE SEQUENCE TO p1_staging from a SYSDBA session inside ORCLPDB. (CREATE VIEW will likely be needed the same way when the analytics layer is built.)
+- Table doubled to 200 rows. An INSERT is additive; re-running the build while the DROP was failing/skipped stacked a second 100 on top, producing duplicate record_ids. The DROP-first pattern plus the uq_subject_record_id unique constraint together make this impossible going forward — a second load now errors instead of silently doubling.
+- Misread "race all NULL" as a broken join. The first five rows (001–005) are screen-failures with no D2 row, so NULL race is correct there; checking a row that is in D2 (010) showed race populated. Verified: 100 total, race populated for exactly the 28 eligible.
+
+### Verified this session
+subject: 100 rows, one per screened volunteer. race/ethnicity populated for the 28 eligible, NULL for 72 screen-failures (the LEFT JOIN behaving correctly). Constraints confirmed live via user_constraints (PK_SUBJECT type P, UQ_SUBJECT_RECORD_ID type U).
+
+### Next milestone
+Build eligibility (100), enrollment (18), medical_history (28), and the visit dimension, each as its own sql/core/*.sql following the subject pattern. Resolve the open enrollment-vs-dosing dose-field overlap when enrollment is built.
+---
