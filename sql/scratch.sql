@@ -18,3 +18,15 @@ SELECT COUNT(*) FROM dosing;
 SELECT cohort_open_date, planned_dose_mg, dose_per_kg FROM dosing FETCH FIRST 3 ROWS ONLY;
 SELECT constraint_name, constraint_type FROM user_constraints WHERE table_name = 'DOSING';
 SELECT planned_dose_mg, COUNT(*) FROM dosing GROUP BY planned_dose_mg ORDER BY planned_dose_mg;
+=======
+-- eligibility: one row per screened volunteer (100). The screening checklist + verdict.
+-- Derived from staging D1. Demographics live on subject; not repeated here.
+SELECT COUNT(*) FROM eligibility;
+SELECT eligibility_determination, COUNT(*) FROM eligibility GROUP BY eligibility_determination;
+SELECT constraint_name, constraint_type FROM user_constraints WHERE table_name = 'ELIGIBILITY';
+=======
+--medical_history: one row per screened volunteer (100). The medical history checklist.
+-- Derived from staging D2. Demographics live on subject; not repeated here.
+SELECT COUNT(*) FROM medical_history;
+SELECT COUNT(*) AS all_28 FROM medical_history m JOIN subject s ON m.record_id = s.record_id;
+SELECT constraint_name, constraint_type FROM user_constraints WHERE table_name = 'MEDICAL_HISTORY';

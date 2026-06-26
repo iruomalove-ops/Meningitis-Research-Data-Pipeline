@@ -1669,3 +1669,20 @@ enrollment: 18 Randomised / 10 Reserve. dosing: 6/6/6 across 2/4/8 mg, dose_per_
 
 ### Next milestone
 eligibility (100, from D1), then medical_history (28, from D2), then the visit dimension.
+
+---
+## 2026-06-24 — Core tier: eligibility (100) and medical_history (28) — person cluster complete
+
+### What was built
+eligibility (100, from D1): the screening checklist (i/e fields, raw 1/0) plus verdict, screening_date/screened_by. medical_history (28, from D2): the *_any/*_details gateways, lifestyle, vaccination, family history, pi_assessment. Demographics stay on subject; screening vitals deferred to vital_sign — neither repeated here, so no overlap.
+
+### Decisions
+- pi_assessment placed in medical_history (investigator finding from the same screening encounter, same 28 population) rather than on the lean subject dimension.
+- alcohol_units / caffeine_cups typed NUMBER(5,1) as quantities; gateway codes stay raw VARCHAR2.
+
+### Person cluster now complete
+Five core tables, all FK-linked to subject(record_id), all verified at target counts:
+subject 100, eligibility 100 (28 eligible / 72 screen-fail), enrollment 28 (18/10), dosing 18 (6/6/6), medical_history 28. record_id threads all of them.
+
+### Next milestone
+visit dimension (11 rows from event_mapping.csv) — different kind of table, loaded from a reference file not a staging instrument, and the table every findings fact will point at. Then the findings/event facts: pk_concentration, adverse_event, and the long vital_sign / lab_result / diary_symptom.
