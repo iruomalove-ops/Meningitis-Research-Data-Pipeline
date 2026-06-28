@@ -88,3 +88,32 @@ SELECT v.label, lr.lab_value
 FROM lab_result lr JOIN visit v ON lr.visit_id = v.visit_id
 WHERE lr.record_id = 'ZA-CPT-P1-080' AND lr.lab_test = 'ALT'
 ORDER BY v.sort_order;
+=======
+-- adverse_event: event fact. One row per real AE (23). Already event-shaped — no unpivot.
+-- Derived from staging D6, filtered to ae_any=1. The 67 "no AE this visit" placeholders stay in staging.
+SELECT COUNT(*) FROM adverse_event;
+SELECT record_id, ae_term, ae_ctcae_grade, is_sae FROM adverse_event WHERE is_sae = '1' OR record_id = 'ZA-CPT-P1-080';
+SELECT ae_any, COUNT(*) FROM d6_adverse_events_and_saes GROUP BY ae_any;
+
+SELECT COUNT(*) AS d6_real_aes
+FROM d6_adverse_events_and_saes
+WHERE ae_any = '1';
+
+SELECT COUNT(*) AS after_join
+FROM d6_adverse_events_and_saes d6
+JOIN visit v ON v.event_name = d6.redcap_event_name
+WHERE d6.ae_any = '1';
+
+SELECT record_id, ae_term, ae_ctcae_grade, ae_relatedness, is_sae, sae_criterion
+FROM adverse_event
+WHERE is_sae = '1' OR record_id = 'ZA-CPT-P1-080'
+ORDER BY record_id;
+=======
+---- diary_symptom: long findings table. One row per volunteer per diary visit per symptom (≈ 72×7 = 504).
+-- Derived from staging D7 by UNPIVOT. 7 rated symptoms on a 0-3 severity scale.
+SELECT COUNT(*) FROM diary_symptom;
+SELECT symptom, COUNT(*) FROM diary_symptom GROUP BY symptom ORDER BY symptom;
+SELECT v.label, ds.symptom, ds.severity
+FROM diary_symptom ds JOIN visit v ON ds.visit_id = v.visit_id
+WHERE ds.record_id = 'ZA-CPT-P1-010' AND ds.symptom IN ('NAUSEA','GI')
+ORDER BY v.sort_order, ds.symptom;

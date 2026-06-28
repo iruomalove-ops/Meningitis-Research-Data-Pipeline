@@ -1739,4 +1739,32 @@ Key behaviour: UNPIVOT skips NULLs by default. Labs sit empty at the 7 vitals-on
 lab_result: 918 rows, all 17 analytes at equal counts (54 each = 18×3).
 
 Engineered narrative survived the unpivot: volunteer 080's ALT reads 25 (screening) → 22 (t48h) → 86 (day-7)
+
+### Next milestone
+diary_symptom (D7, third long table), then adverse_event (D6, event-shaped, no unpivot).
 ---
+## 2026-06-24 — Core tier COMPLETE: adverse_event + diary_symptom (final facts)
+
+### What was built
+The last two fact tables, completing the core tier: adverse_event (23, from D6) and diary_symptom (504, from D7). All 12 core tables now built and verified.
+
+### Decisions made this session
+
+**adverse_event holds the 23 real AEs only.** Filtered to ae_any=1; the 67 "no AE this visit" placeholders stay in staging. Reason: an adverse_event table should contain adverse events — the absence-of-event rows are derivable as a view if ever needed.
+
+**SAE fields kept inline, not split into a separate table.** is_sae and the SAE detail columns sit in adverse_event, blank for the 22 non-serious AEs. Reason: SDTM's AE domain keeps seriousness as qualifiers in the AE record, not a separate domain — and one SAE doesn't justify a table.
+
+**diary_symptom unpivots only the 7 rated symptoms.** sym_other (free text) and the medication fields excluded — not 0-3 rated symptoms, so they don't share the severity scale. A diary_note table is their home later if wanted.
+
+**Symptom severity typed NUMBER, not a code.** Reason: severity is ordinal (3 is genuinely worse than 1) and averaging it is meaningful — it's how the cohort dose-response gradient was shown. Codes like sex/race stay VARCHAR2; an ordinal scale stays numeric.
+
+**Composite key points at the grain.** diary_symptom keys on (record_id, visit_id, symptom) — not redcap_repeat_instance, which after the unpivot is shared across all 7 symptom rows of one entry and so isn't unique. The unpivot makes the grain finer (one row per symptom), so the symptom name becomes part of what identifies a single observation. Same structure SDTM uses for findings (subject + visit + test).
+
+### Verified
+adverse_event 23, with the engineered narrative intact: 080's hot flushes + transaminase elevation (G1), 010's gastroenteritis SAE (G3, unrelated, hospitalisation). diary_symptom 504, 7 symptoms at 72 each, 010's nausea/GI escalating around t48h then settling by day-7 — the SAE story threaded through the diary.
+
+### Core tier complete — all 12 tables
+Dimensions: subject, visit. Person: eligibility, enrollment, dosing, medical_history. Facts: pk_concentration, sample_handling, vital_sign, lab_result, adverse_event, diary_symptom. Every fact FK-linked to its dimensions; the cross-instrument narrative traceable end to end through the model.
+
+### Next milestone
+Analytics layer — views decoding raw codes to labels (sex, race, relatedness, etc.) and deriving values (abnormal flags from reference ranges). Will need GRANT CREATE VIEW to p1_staging. Then Power BI, then the SDTM mapping capstone.
