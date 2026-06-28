@@ -1686,3 +1686,22 @@ subject 100, eligibility 100 (28 eligible / 72 screen-fail), enrollment 28 (18/1
 
 ### Next milestone
 visit dimension (11 rows from event_mapping.csv) — different kind of table, loaded from a reference file not a staging instrument, and the table every findings fact will point at. Then the findings/event facts: pk_concentration, adverse_event, and the long vital_sign / lab_result / diary_symptom.
+---
+## 2026-06-24 — Core tier: visit dimension + first fact tables (pk_concentration, sample_handling)
+
+### What was built
+visit dimension (11 events) and the first two fact tables, both from D4 (144 rows each).
+
+### visit — authored reference dimension
+Not derived from staging; the 11 events typed directly as INSERT...VALUES because the timing values are nominal protocol values, not in any source file. Columns: event_name (natural key, exact REDCap spelling), label, sort_order, hours_from_dose, nominal_day, visit_category.
+- Timing is NOMINAL (protocol-planned): dosing = hour 0, PK draws 0.5/1/2/4/8/24/48h, screening −168h (Day −7), day-7 168h, SRC 504h (Day 21). Actual per-draw timing stays in D4.
+- visit_category flags PK_SCHEDULE (7, the intensive sampling grid) vs CLINICAL_VISIT (4, standalone visits) — a structural distinction a reviewer reads at a glance. Replaced an earlier "derived vs protocol" flag idea that didn't hold once all timing was nominal.
+
+### D4 split into two facts by concern
+Like the D3a split: pk_concentration (the finding — concentration, blq, timing) and sample_handling (the chain of custody — cannula, tube, centrifuge, storage). Named sample_handling deliberately so non-specialist sample-management staff understand it without explanation. Joining the two back on (record_id, visit_id) returns 144 — the split preserved the one result-to-one specimen relation cleanly.
+
+### New skill — fact tables with two foreign keys
+First facts carrying two FKs (subject + visit) and a composite unique key (record_id, visit_id) matching their grain. D4 has no event name, only a timepoint code, so an inline CASE in the INSERT bridges code → visit.event_name, then joins visit to pick up visit_id. Inline rather than a lookup table: traceable and portable, and D4 is the only instrument with the code-not-name quirk. Verified: 144 rows, 18 per timepoint, 080's curve reads correctly by visit label.
+
+### Next milestone
+adverse_event (23, from D6, already event-shaped) — then the long/unpivoted findings: vital_sign, lab_result, diary_symptom.

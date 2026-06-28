@@ -30,3 +30,29 @@ SELECT constraint_name, constraint_type FROM user_constraints WHERE table_name =
 SELECT COUNT(*) FROM medical_history;
 SELECT COUNT(*) AS all_28 FROM medical_history m JOIN subject s ON m.record_id = s.record_id;
 SELECT constraint_name, constraint_type FROM user_constraints WHERE table_name = 'MEDICAL_HISTORY';
+=======
+-- visit: the event dimension. One row per trial event (11).
+-- Authored reference table, not derived from staging.
+-- hours_from_dose & nominal_day are NOMINAL (protocol-planned) timing; dosing = hour 0.
+-- Actual per-draw timing lives in D4 (actual_datetime), not here.
+-- visit_category: PK_SCHEDULE (intensive PK sampling grid) vs CLINICAL_VISIT (standalone visit).
+SELECT event_name, hours_from_dose, nominal_day, visit_category
+FROM visit ORDER BY sort_order;
+SELECT visit_category, COUNT(*) FROM visit GROUP BY visit_category;
+=======
+-- pk_concentration: the PK finding. One row per volunteer per timepoint (144).
+-- Derived from staging D4. Sample chain-of-custody lives in sample_handling.
+-- D4 carries a numeric timepoint code, not an event name; the CASE bridges
+--   code -> visit.event_name so this fact can FK to the visit dimension.
+SELECT COUNT(*) FROM pk_concentration;
+SELECT v.label, COUNT(*)
+FROM pk_concentration p JOIN visit v ON p.visit_id = v.visit_id
+GROUP BY v.label ORDER BY MIN(v.sort_order);
+-- sample_handling: PK sample chain of custody. One row per volunteer per timepoint (144).
+-- Derived from staging D4. The PK finding (concentration) lives in pk_concentration.
+-- Same timepoint-code -> visit.event_name bridge as pk_concentration.
+SELECT COUNT(*) FROM sample_handling;
+SELECT COUNT(*) AS paired
+FROM pk_concentration p
+JOIN sample_handling s
+  ON p.record_id = s.record_id AND p.visit_id = s.visit_id;
