@@ -56,3 +56,35 @@ SELECT COUNT(*) AS paired
 FROM pk_concentration p
 JOIN sample_handling s
   ON p.record_id = s.record_id AND p.visit_id = s.visit_id;
+=======
+-- unpivot verififcation: one row per volunteer per timepoint (144). The unpivoted PK finding.
+SELECT record_id, redcap_event_name, vs_test, vs_value
+FROM d5_safety_labs_and_vitals
+UNPIVOT (
+  vs_value FOR vs_test IN (
+    d5_sbp  AS 'SBP',
+    d5_dbp  AS 'DBP',
+    d5_hr   AS 'HR',
+    d5_temp AS 'TEMP',
+    d5_rr   AS 'RR',
+    d5_spo2 AS 'SPO2'
+  )
+);
+=======
+-- vital_sign: long findings table. One row per volunteer per visit per vital (≈ 18×10×6).
+-- Derived from staging D5 by UNPIVOT (wide vitals columns -> rows).
+SELECT COUNT(*) FROM vital_sign;
+SELECT vs_test, COUNT(*) FROM vital_sign GROUP BY vs_test ORDER BY vs_test;
+SELECT v.label, vs.vs_value
+FROM vital_sign vs JOIN visit v ON vs.visit_id = v.visit_id
+WHERE vs.record_id = 'ZA-CPT-P1-080' AND vs.vs_test = 'SBP'
+ORDER BY v.sort_order;
+=======
+-- lab_result: long findings table. One row per volunteer per lab visit per analyte (≈ 18×3×17 = 918).
+-- Derived from staging D5 by UNPIVOT. Labs populate at only 3 events; UNPIVOT skips the NULL (vitals-only) events automatically.
+SELECT COUNT(*) FROM lab_result;
+SELECT lab_test, COUNT(*) FROM lab_result GROUP BY lab_test ORDER BY lab_test;
+SELECT v.label, lr.lab_value
+FROM lab_result lr JOIN visit v ON lr.visit_id = v.visit_id
+WHERE lr.record_id = 'ZA-CPT-P1-080' AND lr.lab_test = 'ALT'
+ORDER BY v.sort_order;

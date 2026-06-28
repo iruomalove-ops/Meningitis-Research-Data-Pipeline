@@ -1705,3 +1705,38 @@ First facts carrying two FKs (subject + visit) and a composite unique key (recor
 
 ### Next milestone
 adverse_event (23, from D6, already event-shaped) — then the long/unpivoted findings: vital_sign, lab_result, diary_symptom.
+---
+## 2026-06-24 — Core tier: long findings tables vital_sign + lab_result (UNPIVOT)
+
+### What was built
+Two long findings tables from D5, both via UNPIVOT:
+- vital_sign — 6 vitals across up to 10 events
+- lab_result — 17 analytes across the 3 lab events (918 rows)
+
+Wide D5 measurement columns became one row per measurement.
+
+### Decision 1 — two tables, not one combined findings table
+Split vitals and labs into separate tables rather than one merged findings table.
+
+Reasoning: they are different SDTM domains (VS vs LB) for real reasons — different reference ranges, different collection schedules, different regulatory handling. They also have different event populations: vitals at 10 events, labs at only 3. Different grain, different concern, different table. Same discipline as the D3a and D4 splits.
+
+### Decision 2 — UNPIVOT over UNION ALL
+Chose Oracle's UNPIVOT clause to reshape wide to long, rather than stacking one SELECT per column with UNION ALL.
+
+Reasoning: UNPIVOT is the professional tool and stays compact. The UNION ALL alternative would have meant 17 stacked blocks for labs — unwieldy and error-prone. Learned it first on vital_sign (6 columns) before applying it to lab_result (17).
+
+### Decision 3 — abnormal flags excluded from lab_result
+Left d5_any_lab_abnormal and d5_glucose_high_flag out of the table.
+
+Reasoning: they are visit-level qualifiers, not per-analyte facts. Forcing them in would mean repeating one flag across all 17 analyte rows — the denormalization avoided everywhere else. Abnormality is better derived from reference ranges in the analytics layer. If a visit-level flag is wanted later, it belongs in its own small lab_review table (any_abnormal, details, action, signoff), not here.
+
+### How UNPIVOT works (technique note)
+Names a value column and a test-label column, lists the source columns each with its label, emits one row per column. Wrapped in a subquery, then joined to visit on redcap_event_name — D5 carries the event name directly, so no code bridge was needed (unlike D4). Two FKs (subject + visit); composite unique key is now (record_id, visit_id, test) because the test is part of the grain.
+
+Key behaviour: UNPIVOT skips NULLs by default. Labs sit empty at the 7 vitals-only events, so they generate no rows there — the empty-lab-cell problem that drove the whole long-vs-wide decision is solved automatically, with no filter written.
+
+### Verified
+lab_result: 918 rows, all 17 analytes at equal counts (54 each = 18×3).
+
+Engineered narrative survived the unpivot: volunteer 080's ALT reads 25 (screening) → 22 (t48h) → 86 (day-7)
+---
