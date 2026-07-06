@@ -1813,3 +1813,20 @@ src_review 18 rows; deviation split 17/1 (the single deviation, volunteer 056); 
 
 ### Next milestone
 Tier-1 reports, starting with the Protocol Deviation Listing (reads src_review, surfaces 056's missed T+1h vitals check reported to sponsor and ethics). Report structure: one folder per report under sql/reports/ with query, output, and README.
+---
+## 2026-06-24 — Tier-1 reports begun: Protocol Deviation Listing (Report 1)
+
+### What was built
+The first of six reporting deliverables, in sql/reports/01-protocol-deviation/ — query.sql, output.md, README.md. Reads src_review, lists all protocol deviations with sponsor/ethics reporting status. Established the per-report folder structure (query + output + README) the whole reports tier will follow.
+
+### Decisions made this session
+
+**Reporting flags decoded inline (1→Yes/No), cohort left raw.** The listing is a human-facing deliverable, so the sponsor/ethics flags read better decoded — that's what the reports layer is for. But cohort→dose ("2"→"4mg") was left coded: dose labelling should come from one authoritative place (the codelist, SDTM phase), not be scattered into report queries where a wrong mapping mislabels the dose. Documented in the README instead.
+
+**Output saved as a clean markdown table, not the sqlplus console dump.** The output file is a portfolio artifact a reviewer reads; a formatted table renders properly on GitHub and reads like a real listing, where the wrapped console text looks like a terminal paste. Ran the query through the extension grid, formatted the result.
+
+### Verified
+One deviation across 18 randomised volunteers — ZA-CPT-P1-056, Cohort 2, T+1h vitals captured 15 min late, reported to sponsor and ethics. Realistic clean-trial result.
+
+### Next milestone
+Report 2 (SAE Line Listing, from adverse_event) and Report 3 (Subject Enrolment Report, aggregation from subject + enrollment).
