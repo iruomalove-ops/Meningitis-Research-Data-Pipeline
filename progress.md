@@ -1794,3 +1794,22 @@ src_review core table (D3b — DLT, SRC decision, deviations) for Report 1. Code
 
 ### Next milestone
 Build src_review, then Tier-1 reports: Protocol Deviation Listing, SAE Line Listing, Subject Enrolment Report.
+
+---
+
+## 2026-06-24 — Core schema closed: src_review built, setup script captured
+
+### What was built
+src_review — the last core table (18 rows, from D3b), holding the safety-review and SRC escalation record plus the protocol-deviation fields. And 01_create_schema.sql in sql/setup/, the script that creates the p1_staging schema and grants its privileges. The core schema is now complete: 13 tables plus lab_reference.
+
+### Decisions made this session
+
+**Kept safety-review and deviation fields in one src_review table.** D3b bundles the SRC escalation decision and the protocol-deviation record together because in the trial they're both recorded at the same SRC meeting. Rather than split them, src_review holds both at D3b's natural grain (one row per randomised volunteer); the deviation report just selects the deviation columns. No visit FK — this is a review tied to the volunteer, not to a single visit event.
+
+**Wrote the setup script as an after-the-fact reconstruction, not a step to re-run.** The schema and grants were created live during the build (reactively — CREATE SEQUENCE when the first IDENTITY column hit ORA-01031, and CREATE VIEW added ahead for the analytics layer). The database already has them. 01_create_schema.sql consolidates all of it in one place so the build is reproducible from zero, in order — closing the gap where the very first step (creating the user) existed only in command history. Header documents that it's the record, not a pending action. Password left plaintext with a comment noting that's a local-demo choice, not production practice.
+
+### Verified
+src_review 18 rows; deviation split 17/1 (the single deviation, volunteer 056); dlt_observed 0 and src_decision 1 across all 18 (no DLT, every cohort escalated). 056's row spot-checked directly.
+
+### Next milestone
+Tier-1 reports, starting with the Protocol Deviation Listing (reads src_review, surfaces 056's missed T+1h vitals check reported to sponsor and ethics). Report structure: one folder per report under sql/reports/ with query, output, and README.

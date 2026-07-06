@@ -121,3 +121,25 @@ ORDER BY v.sort_order, ds.symptom;
 -- Ranges sourced from simulate_d5.py (lines 21-57, "standard adult clinical reference ranges").
 SELECT * FROM lab_reference;
 SELECT lab_test, sex_code, range_low, range_high, unit FROM lab_reference WHERE lab_test IN ('HB','CREATININE','POTASSIUM','GLUCOSE_FASTED','GLUCOSE_NONFASTED') ORDER BY lab_test, sex_code;
+-- src_review: one row per randomised volunteer (18). Safety review + SRC escalation + deviations.
+-- Derived from staging D3b. Recorded at the SRC meeting; deviation fields ride along at the same grain.
+SELECT COUNT(*) FROM src_review;
+SELECT deviation_any, COUNT(*) FROM src_review GROUP BY deviation_any;
+SELECT dlt_observed, src_decision, COUNT(*) FROM src_review GROUP BY dlt_observed, src_decision;
+select * from src_review where record_id = 'ZA-CPT-P1-056';
+-- Protocol Deviation Listing — Phase 1 dexamethasone PK study
+-- Source: src_review (core). Lists all protocol deviations with reporting status.
+-- Standard sponsor deliverable; documents deviations reported to sponsor and ethics.
+
+SELECT
+  sr.record_id                         AS subject,
+  e.cohort                             AS cohort,
+  sr.deviation_details                 AS deviation,
+  sr.src_meeting_date                  AS reviewed_on,
+  sr.deviation_reported                AS reported_to_sponsor,
+  sr.deviation_ethics                  AS reported_to_ethics,
+  sr.pi_escalation_signoff             AS pi_signoff
+FROM src_review sr
+JOIN enrollment e ON sr.record_id = e.record_id
+WHERE sr.deviation_any = '1'
+ORDER BY sr.record_id;
