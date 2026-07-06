@@ -1768,3 +1768,29 @@ Dimensions: subject, visit. Person: eligibility, enrollment, dosing, medical_his
 
 ### Next milestone
 Analytics layer — views decoding raw codes to labels (sex, race, relatedness, etc.) and deriving values (abnormal flags from reference ranges). Will need GRANT CREATE VIEW to p1_staging. Then Power BI, then the SDTM mapping capstone.
+
+---
+## 2026-06-24 — Reference layer: lab_reference table (units + normal ranges)
+
+### What was built
+lab_reference — a small authored lookup carrying unit, normal range low, and range high per lab test. lab_result holds only test + value, which is clinically unreadable on its own (potassium "3.3" needs its unit and the 3.5–5.0 normal range to be judged low). This table supplies that, so Report 5 can flag out-of-range values. Maps to SDTM LB's LBORRESU / LBORNRLO / LBORNRHI. 22 rows.
+
+### Decisions made this session
+
+**Units and ranges live here, not on lab_result.** They're per-analyte metadata — identical for every potassium result — so putting them on all 918 result rows would repeat one fact hundreds of times. Stored once here, joined when needed. Same reasoning that keeps race off every lab row.
+
+**'ALL' wildcard for non-sex-specific tests.** Only HB and creatinine vary by sex; the other 14 have one range for everyone. To store each range once while keeping the join uniform, non-sex-specific tests carry sex_code = 'ALL'. Worth recording how this works: Oracle doesn't know 'ALL' means "any sex" — it's just a string in a column. The meaning lives in Report 5's join (`lr.sex_code = subject.sex OR lr.sex_code = 'ALL'`); that OR is what makes it a wildcard. The database stores values, the query supplies meaning — same as why code '1' only "means" Male once a decode says so. Documented in the table comment for humans.
+
+**Ranges sourced from simulate_d5.py, not the dictionary.** The dictionary's min/max are data-entry validation bounds (potassium 2.5–7), far wider than clinical normal — using them would miss real abnormalities. The script's constants are the ranges the data was actually generated against, so they're the authoritative source.
+
+### Bug caught by verifying
+HB was initially filled from standard g/dL ranges (13–17.5), but the actual HB data reads 122–167 — it's g/L, and the dictionary's "g/dL" note is wrong. Corrected to g/L with the script's ranges (135–175 M, 120–155 F). Then scanned all 17 analytes' data against their assigned ranges to check for any other scale mismatch — all clean. When sources disagree, the data decides.
+
+### Verified
+22 rows, HB/creatinine sex-split correctly. Ranges confirmed to flag the engineered narrative: ALT reaches 86 (ceiling 40) → 080's transaminase signal flags; potassium dips to 3.3 (floor 3.5) → the 8mg hypokalaemia flags. The dictionary's wider bounds would have missed both.
+
+### Still owed
+src_review core table (D3b — DLT, SRC decision, deviations) for Report 1. Codelists deferred to SDTM.
+
+### Next milestone
+Build src_review, then Tier-1 reports: Protocol Deviation Listing, SAE Line Listing, Subject Enrolment Report.

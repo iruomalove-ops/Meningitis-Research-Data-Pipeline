@@ -117,3 +117,7 @@ SELECT v.label, ds.symptom, ds.severity
 FROM diary_symptom ds JOIN visit v ON ds.visit_id = v.visit_id
 WHERE ds.record_id = 'ZA-CPT-P1-010' AND ds.symptom IN ('NAUSEA','GI')
 ORDER BY v.sort_order, ds.symptom;
+-- lab_reference: analyte units + normal reference ranges. Authored reference table.
+-- Ranges sourced from simulate_d5.py (lines 21-57, "standard adult clinical reference ranges").
+SELECT * FROM lab_reference;
+SELECT lab_test, sex_code, range_low, range_high, unit FROM lab_reference WHERE lab_test IN ('HB','CREATININE','POTASSIUM','GLUCOSE_FASTED','GLUCOSE_NONFASTED') ORDER BY lab_test, sex_code;
