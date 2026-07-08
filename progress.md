@@ -1817,7 +1817,7 @@ Tier-1 reports, starting with the Protocol Deviation Listing (reads src_review, 
 ## 2026-06-24 — Tier-1 reports begun: Protocol Deviation Listing (Report 1)
 
 ### What was built
-The first of six reporting deliverables, in sql/reports/01-protocol-deviation/ — query.sql, output.md, README.md. Reads src_review, lists all protocol deviations with sponsor/ethics reporting status. Established the per-report folder structure (query + output + README) the whole reports tier will follow.
+The first of six reporting deliverables, in sql/reports/protocol-deviation/ — query.sql, output.md, README.md. Reads src_review, lists all protocol deviations with sponsor/ethics reporting status. Established the per-report folder structure (query + output + README) the whole reports tier will follow.
 
 ### Decisions made this session
 
@@ -1830,3 +1830,23 @@ One deviation across 18 randomised volunteers — ZA-CPT-P1-056, Cohort 2, T+1h 
 
 ### Next milestone
 Report 2 (SAE Line Listing, from adverse_event) and Report 3 (Subject Enrolment Report, aggregation from subject + enrollment).
+---
+## 2026-06-24 — SAE Line Listing (Report 2)
+
+### What was built
+Report 2 in sql/reports/sae-line-listing/ — query.sql, output.md, README.md. Reads adverse_event (is_sae=1), decodes the pharmacovigilance codes, and computes ICH reporting intervals. Surfaces the one SAE across 18 volunteers.
+
+### Decisions made this session
+
+**Show computed reporting intervals, no hard compliance flag.** The listing derives days-from-onset-to-report for sponsor and ethics (sponsor_date − onset_date), so a reviewer can see ICH timelines were met. Stopped short of a pass/fail flag: the ICH window depends on SAE type (7 days fatal/life-threatening, 15 for other serious), so a single hard-coded threshold would misjudge a different event. Showing the interval is honest; flagging pass/fail would overclaim. The date subtraction works directly because onset/sponsor/ethics are real DATE columns in the core — the payoff of typing them properly at build time.
+
+**Decoded causality and seriousness criterion inline.** A safety board reads "Unrelated / Hospitalisation", not "1 / 3". This is the reports layer's job, same as Report 1's flags. Cohort left raw again, decodes at the codelist.
+
+### Bug caught by verifying
+Ran the query against the live DB rather than writing output.md from the CSV — cohort came back 3 (8 mg), not the 1 I'd assumed. output.md corrected to match the real result throughout.
+
+### Verified
+One SAE: ZA-CPT-P1-010, Cohort 3 (8 mg), Grade 3 acute gastroenteritis, hospitalisation, assessed Unrelated to drug, reported sponsor +1 day / ethics +7 days — within ICH windows. Serious-but-unrelated, still fully reported.
+
+### Next milestone
+Report 3 — Subject Enrolment Report (aggregation with grouping/counting from subject + enrollment). First report using GROUP BY rather than a plain filter.
