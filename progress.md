@@ -1850,3 +1850,20 @@ One SAE: ZA-CPT-P1-010, Cohort 3 (8 mg), Grade 3 acute gastroenteritis, hospital
 
 ### Next milestone
 Report 3 — Subject Enrolment Report (aggregation with grouping/counting from subject + enrollment). First report using GROUP BY rather than a plain filter.
+---
+## 2026-06-24 — Subject Enrolment Report (Report 3) — Tier 1 complete
+
+### What was built
+Report 3 in sql/reports/03-subject-enrolment/ — the first aggregation report (GROUP BY / COUNT rather than filtering to rows). Three parts: screening funnel, enrolment by cohort, and screen-failure reasons. Completes Tier 1 (Reports 1–3).
+
+### Decisions made this session
+
+**Structured the report to the CONSORT standard rather than by intuition.** Before building, checked what a real subject-disposition report contains instead of reasoning it out. Every clinical SAP structures disposition the same way: a CONSORT funnel (assessed → eligible → randomised → allocated) reported by arm, plus reasons for non-recruitment. This corrected two things: it confirmed sentinel *selection methodology* does not belong here (that's randomisation/SAP territory — disposition reports are counts-through-stages by arm), and it caught that screen-failure *reasons* are a CONSORT requirement I had initially left out. Added the screen-failure-by-reason breakdown as the third part.
+
+**Decoded screen-failure reasons inline, sourced from the dictionary.** The reasons came back as raw codes (2, 4, 1, 7), and for a disposition report the reason breakdown is the whole point — bare codes gut it. Decoded via CASE, but pulled the code definitions from the data dictionary's Choices column rather than guessing, since a wrong mapping would misreport why 51 of 72 volunteers failed. Grouped on the raw column, decoded in the SELECT.
+
+### Verified
+Funnel 100 → 28 eligible → 18 randomised + 10 reserve. Cohorts even at 6/6/6, 2 sentinels each. Screen failures: 51 exclusion criterion, 9 BMI, 8 inclusion criterion, 4 withdrew consent (72 total). Coherent recruitment picture — bulk failed on exclusions, as expected for strict healthy-volunteer screening.
+
+### Next milestone
+Tier 2 (analytical reports): Cross-instrument Reconciliation, Safety Lab Summary by Cohort (uses lab_reference for out-of-range flagging), PK Summary Tables (window functions for Cmax/AUC/half-life).
