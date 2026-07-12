@@ -1867,3 +1867,49 @@ Funnel 100 → 28 eligible → 18 randomised + 10 reserve. Cohorts even at 6/6/6
 
 ### Next milestone
 Tier 2 (analytical reports): Cross-instrument Reconciliation, Safety Lab Summary by Cohort (uses lab_reference for out-of-range flagging), PK Summary Tables (window functions for Cmax/AUC/half-life).
+---
+## 2026-07-09 — SDTMIG methodology log: through 4.1.7, into 4.2 identity cluster
+
+Learning session, no code. Read SDTMIG v3.3 Chapter 4.1 (General Domain Assumptions) end to end and the naming-and-identity cluster of 4.2 (4.2.1–4.2.3). Every concept anchored to the existing core-tier build (vital_sign, dm, pc, adverse_event) rather than learned abstractly. This is the methodology grounding before the SDTM mapping capstone.
+
+### What I learned
+
+**Core designations (4.1.5).** Req/Exp/Perm are distinguished by how each handles the empty cell, nothing else. Required forbids null — genuine absence must be a present controlled value (e.g. SEX → U), never a blank. Expected keeps the column even if null for every row, plus a Define-XML note. Permissible omits the column entirely if the study didn't collect it — the asymmetry vs Expected is the point (same "collected nothing" situation, opposite handling). Confirmed against source: DM.SEX = Required, DM.AGE = Expected.
+
+**Natural keys (4.1.9).** The combination of meaningful variables that makes a row unique — for vital_sign that's USUBJID + VISITNUM + VSTESTCD, NOT the surrogate --SEQ. A surrogate counter forces uniqueness artificially and hides the grain; the natural key exposes it and lets a reviewer test the uniqueness claim against the data. Watch the surrogate-key reflex from Oracle: SDTM makes the meaningful data the star, the counter is bookkeeping.
+
+**Origin metadata (4.1.8).** collected / derived / assigned tells the reviewer *how to audit* each column (trace to CRF / reproduce the algorithm / check the evaluator). Value-level metadata handles a column that mixes origins (QS: items collected, total score derived). All of it is metadata — it lives in the Define-XML file, not in the data rows. Define-XML = the container/file; metadata = the content inside it. Don't collapse the two.
+
+**The four Roles (4.1.4).** Identifier → Topic → Qualifier → Timing, in that order = who → what → what-describes-it → when. For a lab row: STUDYID/USUBJID/LBSEQ (identifiers, USUBJID primary), LBTESTCD (topic), LBORRES + LBORRESU (qualifiers), LBDTC + VISITNUM (timing).
+
+**EPOCH (4.1.3).** A study-phase label on a record (SCREENING / TREATMENT / FOLLOW-UP) — the study-structure "when," distinct from the calendar "when" the date gives. Assign it by deriving from study design; never impute — if you can't determine the phase, null. Null for anything before the subject's participation (e.g. pre-enrollment medical history), BUT screening still gets an epoch, because participation includes screening even though it precedes RFSTDTC. Key distinction: two timeline landmarks — start of participation vs RFSTDTC — and screening sits between them.
+
+**Splitting domains (4.1.7).** One *logical* domain stored across several *physical* files, partitioned by --CAT (QS → qscg/qscs/qsmm, all DOMAIN=QS). Physical convenience for size/usability, not logical division — the files must stack back into one dataset. This is NOT normalization (normalization splits by structure to kill redundancy; splitting partitions identical-structure rows). --CAT must not be null when splitting. My D3a→enrollment+dosing split was normalization/domain separation, not a 4.1.7 split. This trial is too small and too structurally simple to need any real split — recognizing "doesn't apply" is the skill.
+
+**Naming & identity (4.2.1–4.2.3).** Variable names = two-letter domain prefix + standardized root; the root is portable vocabulary (--DTC means date/time of collection everywhere). The IG's -- notation is a placeholder you replace with the real prefix. SUBJID = local site subject number (short, repeatable across sites, traces to source). USUBJID = submission-wide unique id, constructed study+site+subject (e.g. DEX-CPT-003), the thread linking one subject's records across every domain. USUBJID is submission-scoped, NOT person-scoped — same human in a different study gets a different USUBJID.
+
+### Caught by verifying
+Navigating NCI EVS, pulled the wrong RACE codelist twice — grabbed "Race As Collected" (C128689, extensible, 80+ granular terms) instead of the standard non-extensible RACE (C74457), then downloaded the whole SDTM package (C66830) instead of one codelist. Caught by reading each list's name/definition instead of trusting the search hit. Two race codelists exist because of the collection-vs-tabulation split.
+
+### Still owed
+- SEX source value 3=intersex → standard SEX target: PENDING verification against CT SEX codelist.
+- Finish 4.2 values cluster (4.2.5 missing values, 4.2.8 multiple values); skim 4.2.4 / 4.2.6 / 4.2.7 / 4.2.9.
+
+### Next
+4.2 values cluster (4.2.5 + 4.2.8), then decide: march through 4.3–4.5, or jump to Chapter 5 (DM) and learn the remaining assumptions in context against real D1/D2 data.
+## 2026-06-24 — Cross-instrument Reconciliation (Report 4) — Tier 2 begins
+
+### What was built
+Report 4 in sql/reports/04-reconciliation/ — the first cross-table data-quality audit. Per randomised volunteer, counts records in each core instrument via a CTE and correlated subqueries, comparing against expected counts (PK 8, vitals 60, labs 51, diary 28, SRC 1) with a computed OK/CHECK status column.
+
+### Decisions made this session
+
+**Reconcile only instruments with a fixed expected count.** PK, vitals, labs, diary, and SRC each have a known per-volunteer count, so each is a genuine pass/fail check. Adverse events were pulled out entirely: AE count is legitimately variable (0+ per volunteer), so it can't be reconciled by counting — an uncheckable informational column would dilute an audit whose whole value is that every column is a real check. AE reconciliation is a different process (cross-source line comparison on subject/term/dates/grade/causality) and becomes its own report next.
+
+**Documented the discrepancy methodology even though the data is clean.** No gaps exist, so the report correctly returns all-complete — a valid reconciliation result. The value is the logic being demonstrably able to catch a gap (status computed per row) and the README documenting how a real discrepancy is handled: detect the shortfall, source the cause, classify it (documented absence like a haemolysed sample or a withdrawal vs a genuine unexplained gap), record it. A missing record and a missing-record-with-a-reason are different things.
+
+### Verified
+All 18 randomised volunteers complete across all five checked instruments — 8/60/51/28/1 each, every status OK. Totals reconcile: PK 144, vitals 1080, labs 918, diary 504, SRC 18.
+
+### Next milestone
+Report 5 — AE Reconciliation as its own report (four-pillar cross-source comparison). Then Report 6 (Safety Lab Summary, uses lab_reference for out-of-range flagging) and Report 7 (PK Summary, window functions).
