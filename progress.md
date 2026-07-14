@@ -1913,3 +1913,29 @@ All 18 randomised volunteers complete across all five checked instruments — 8/
 
 ### Next milestone
 Report 5 — AE Reconciliation as its own report (four-pillar cross-source comparison). Then Report 6 (Safety Lab Summary, uses lab_reference for out-of-range flagging) and Report 7 (PK Summary, window functions).
+---
+## 2026-06-24 — AE Reconciliation (Report 5) — EDC vs simulated safety extract
+
+### What was built
+Report 5 in sql/reports/05-ae-reconciliation/ — a four-pillar cross-system AE reconciliation, plus safety_db_extract_argus.sql, a simulated Argus-style safety-database extract to reconcile against. Pulled out of Report 4 (count reconciliation) as its own deliverable because it's a fundamentally different method.
+
+### Decisions made this session
+
+**Built a simulated safety extract rather than skip the demonstration.** Real AE reconciliation compares two independent systems (EDC vs Argus/ARISg) — this project has one database, so there is nothing organic to reconcile against. Options were: document the methodology only, or construct a labelled simulation. Chose the simulation with four discrepancies deliberately seeded (one per pillar), because a reconciliation that catches nothing demonstrates nothing. The honesty guardrail is framing: the build script header and the output both state plainly that it is a constructed demonstration artifact with seeded discrepancies, not organic findings. Rejected an earlier idea of reconciling staging D6 against core adverse_event — they aren't independent systems, core is staging filtered by design, so the "discrepancies" would just be re-labelling the transform rule.
+
+**Safety-DB entry rule is multi-dimensional, not causality alone.** Which events a safety database holds: serious (SAE) OR Grade 3+ OR a related event of special interest. All SAEs enter regardless of causality (010's gastroenteritis is Unrelated but serious). A Grade 1 "probably related" headache does not enter — probably-related alone isn't the whole picture; it's causality *plus* severity *plus* whether it's a monitored parameter. 080's transaminase elevation enters because it's a probably-related hepatic signal, not merely because it's related. Yields three reportable events: 010, 056, 080.
+
+**Dropped a fifth pillar (investigator vs sponsor causality).** Real and worth having the fields for, but it's an intra-record check within the safety extract, not a cross-system comparison — including it would blur the report's single competency, which is EDC-vs-safety reconciliation. Both relatedness columns kept in the extract for realism, set matching so no seeded difference goes unchecked.
+
+**Pair on a stable identifier, compare the volatile fields.** Records pair on record_id alone. You cannot pair on a field you're also checking for discrepancies — pairing on onset date would break the pairing for the case whose date IS the discrepancy, surfacing it as two missing records instead of one date mismatch. Each subject has one reportable event, so record_id pairs uniquely.
+
+**Report every differing pillar per case, not just the first.** A CASE that stops at the first mismatch hides the rest (056 would show only its date mismatch, not its grade). Restructured as one check per pillar UNION ALL'd, so a case failing two pillars produces two findings — what the safety team needs to resolve it.
+
+### Bug caught by verifying
+ORDER BY after UNION failed with ORA-00904 on the alias — same quirk as the staging roll-up. Ordered by column position (ORDER BY 1, 2) instead of name.
+
+### Verified
+All four seeded discrepancies caught: 010 TERM (verbatim vs coded), 056 GRADE (EDC 3 vs safety 2) and ONSET DATE (09-Jun vs 10-Jun) — both discrepancies on one case, and 080 EXISTENCE (reportable hepatic signal never entered into safety). The existence check only works because of the FULL OUTER JOIN; an inner join would silently drop exactly the record that matters most.
+
+### Next milestone
+Report 6 — Safety Lab Summary by Cohort (aggregation with reference-range flagging; first use of lab_reference). Then Report 7 — PK Summary Tables (window functions for Cmax/Tmax/AUC).

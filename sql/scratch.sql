@@ -143,3 +143,8 @@ FROM src_review sr
 JOIN enrollment e ON sr.record_id = e.record_id
 WHERE sr.deviation_any = '1'
 ORDER BY sr.record_id;
+---
+select * 
+from pk_concentration;
+
+SELECT * FROM safety_db_extract_argus;
