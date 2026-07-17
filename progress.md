@@ -1939,3 +1939,33 @@ All four seeded discrepancies caught: 010 TERM (verbatim vs coded), 056 GRADE (E
 
 ### Next milestone
 Report 6 — Safety Lab Summary by Cohort (aggregation with reference-range flagging; first use of lab_reference). Then Report 7 — PK Summary Tables (window functions for Cmax/Tmax/AUC).
+---
+## 2026-06-24 — Safety Lab Summary (Report 6) — analytics tier begins
+
+### What was built
+The first analytics view, v_lab_classified, and Report 6 in sql/reports/06-safety-lab-summary/: descriptive statistics per cohort × visit × analyte, change from baseline per subject, and a shift table (baseline category → post-dose category). Also rebuilt lab_result to carry fasting_status.
+
+Of the five components originally scoped: three built, one absorbed, one skipped. Reference-range classification stopped being a standalone component once it became v_lab_classified — it's the derivation the other three stand on, visible in all of them, and a bare 918-row dump of it would add volume rather than insight. The abnormality-to-AE listing was skipped (below).
+
+### Decisions made this session
+
+**Started the analytics tier with a view rather than repeating the join.** Every component needed the same three-way join (lab_result → subject for sex → lab_reference for the range) plus the Low/Normal/High classification. That's the moment abstraction pays — a consumer had finally appeared, and Power BI will want the identical logic. v_lab_classified defines the resolution rules once: the 'ALL' wildcard join for non-sex-specific tests, and the glucose fasted/non-fasted resolution. Required GRANT CREATE VIEW — the second privilege to surface only when the feature was first used (after CREATE SEQUENCE for identity columns). Both now sit in 01_create_schema.sql, so a fresh rebuild hits neither.
+
+**Brought fasting_status into lab_result rather than hardcoding the glucose range.** The glucose reference range depends on fasting state, and every glucose here was drawn fasted (verified: d5_fasting_status = 1 at all three lab events). Hardcoding GLUCOSE → GLUCOSE_FASTED would have worked today but broken silently on a rebuild with different data — the classification must resolve from the data for the repo to be reproducible. Also mirrors SDTM LB's LBFAST. This mattered more than expected: against the non-fasted ceiling of 7.8, every steroid hyperglycaemia reading would have classified Normal and the entire glucose signal would have been invisible.
+
+**The fasting CASE is explicit about all three states.** An earlier version treated anything-not-fasted as non-fasted, conflating "not applicable" with "not fasted" — silently classifying an unknown-fasting glucose against the fed range as though we knew. Now: fasted → fasted range, not-fasted → non-fasted range, anything else → NULL, so the row fails to resolve and the 918/918 count check catches it rather than a wrong answer passing quietly.
+
+**Skipped the abnormality-to-AE listing rather than build it on an approximate join.** The schema does not model the relationship between a lab finding and the AE it caused — lab_result and adverse_event share only the subject. A join on subject + visit would be associative, not causal, and would need a caveat every time it's shown. Three components on solid ground are worth more than a fourth that invites scrutiny of its patch. SDTM's RELREC is where this relationship belongs; carrying it forward as a known gap rather than papering over it now.
+
+### Bug caught by verifying
+simulate_d5.py writes fasting_status = 3 for vitals-only events, but the CRF defines only 1 (Fasted ≥8h), 0 (Not fasted), 2 (Not applicable). Code 3 does not exist in the instrument — 126 rows carry a value the form would have rejected. Nothing downstream is affected (those events have no glucose, so they never reach lab_result; all 918 lab rows are fasting_status = 1), but it is a real conformance defect. Worth a future validation report checking every coded field against the dictionary's permitted values.
+
+### Verified
+v_lab_classified: 918 in, 918 out — every result resolved a reference range, no test-name mismatches, no duplicate ranges double-counting.
+Dose-response landed cleanly at PK +48h. Glucose means 5.07 → 5.63 → 6.10 across cohorts, shift table showing Normal → High for 0 / 4 / 6 subjects — all six of the 8mg cohort moved from normal baseline to high post-dose. Neutrophils 5.68 → 7.42 → 8.87, shifts 0 / 2 / 5. Day 7 shows resolution: cohort 3 glucose falls from 6 High back to 1.
+080's day-7 ALT: 25 → 86, change +61, Normal → High. The same subject also had the study's largest glucose change (+3.0) and neutrophil change (+5.8) at 48h — three biggest-in-study moves on one volunteer, which is what makes the delayed transaminase signal read as biologically coherent rather than idiosyncratic.
+Shift table earned its place: platelets Low → Normal in cohort 2 is volunteer 062's pre-existing baseline finding resolving. An endpoint count alone would have read "0 abnormal" and hidden both the baseline abnormality and its resolution.
+
+
+### Next milestone
+Report 7 — PK Summary Tables (window functions for Cmax and Tmax; AUC by trapezoidal method).

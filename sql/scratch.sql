@@ -148,3 +148,15 @@ select *
 from pk_concentration;
 
 SELECT * FROM safety_db_extract_argus;
+SELECT COUNT(*) FROM lab_result;
+SELECT fasting_status, COUNT(*) FROM lab_result GROUP BY fasting_status;
+
+SELECT COUNT(*) FROM lab_result;
+SELECT COUNT(*) FROM v_lab_classified;
+
+SELECT lab_test, classification, COUNT(*)
+FROM v_lab_classified
+GROUP BY lab_test, classification
+ORDER BY lab_test, classification;
+
+
