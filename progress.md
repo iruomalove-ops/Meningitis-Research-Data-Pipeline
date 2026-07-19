@@ -1969,3 +1969,57 @@ Shift table earned its place: platelets Low → Normal in cohort 2 is volunteer 
 
 ### Next milestone
 Report 7 — PK Summary Tables (window functions for Cmax and Tmax; AUC by trapezoidal method).
+---
+## 2026-07-10 — SDTMIG methodology log: Chapter 4.2 complete (General Variable Assumptions)
+
+Learning session, no code. Read SDTMIG v3.3 Chapter 4.2 end to end, sequentially, nothing skipped. This is the variable-level assumptions layer (4.1 was domain-level). Anchored throughout to the core-tier build (adverse_event, lab_result, D2 medical history). Reads faster from here because 4.3 (controlled terminology) is largely formalizing things already done by hand.
+
+### What I learned — section by section
+
+**4.2.1–4.2.3 — Variable naming & subject identity.**
+Variable names = two-letter domain prefix + standardized root. The root is portable vocabulary: --DTC means date/time of collection in *every* domain, --TESTCD means test code everywhere, --ORRES means original result everywhere. So once you learn a root you know it across all domains; the prefix only says which domain you're in. The IG writes variables generically as --TESTCD / --DTC (double-dash = placeholder); you swap the dashes for the real prefix in an actual domain (VSTESTCD, LBDTC).
+SUBJID vs USUBJID — the one that was confusing, now clear:
+- SUBJID = the subject's *local* number at their site (e.g. 003). Short, human-facing, traces back to the site's source records, and CAN repeat across sites (site A's 003 and site B's 003 both exist).
+- USUBJID = the *submission-wide unique* id, constructed by concatenating study+site+subject (e.g. DEX-CPT-003) so it can never collide. This is the thread every domain uses to link one subject's records together (DM ↔ EX ↔ LB ↔ AE).
+- Critical: USUBJID is submission-scoped, NOT person-scoped. The same human in a different study/submission gets a DIFFERENT USUBJID. It is not a lifelong patient id.
+- USUBJID is a *meaningful constructed* key (encodes study+site+subject), not a bare counter — the opposite of the surrogate-key reflex to watch for.
+
+**4.2.4 — Text case.**
+UPPER CASE is the default for submitted values. Exceptions: (1) controlled terminology values that aren't themselves all-upper — preserve them as the codelist defines; (2) free/verbatim text (investigator narrative, "specify" text) where readability and fidelity to what was actually recorded matter. So it's not "uppercase everything" — it's "uppercase by default, preserve where CT or verbatim requires."
+
+**4.2.5 — Convention for missing values (there are KINDS of missing).**
+The core insight: "absent" is not one thing, and a silent blank hides *why* a value is missing. Three distinct cases:
+- NOT DONE = the value applies and was expected, but something identifiable stopped it (test ordered, tube hemolyzed). Absence carries information → record it with a PRESENT value, not a blank. (Proper home in Findings: --STAT = "NOT DONE", --REASND = the reason. Will meet these when mapping LB.)
+- null = genuinely absent, no story worth telling → empty cell.
+- NOT APPLICABLE = doesn't apply to this subject at all (pregnancy test on a male) → its own concept, NOT the same as null.
+Hard rule: never invent placeholders (no 999, no -1, no "N/A" text). Either leave null or use a controlled term the standard actually provides.
+Test to separate NOT DONE from null: "Is there an identifiable reason for the absence, worth telling the reviewer?" Yes → NOT DONE. No → null.
+
+**4.2.6 — Grouping variables: --CAT and --SCAT.**
+Not interchangeable — HIERARCHICAL. --CAT is the broad category, --SCAT is a subcategory that nests INSIDE a CAT. --SCAT can't exist without a parent --CAT above it. (Same --CAT that a domain gets split on in 4.1.7.)
+
+**4.2.7 — Free text from the CRF ("Other, specify ___").**
+When a coded list ends in "Other (specify)" and someone types free text that escaped the codelist, that text must be PRESERVED somewhere — it doesn't vanish and doesn't get crammed into the coded cell. WHERE it goes depends on the ROLE of the field it's attached to:
+- Attached to a non-result Qualifier (e.g. a category/type field): main field holds "OTHER", the typed text goes to a SUPP-- supplemental qualifier. (D2 example: condition field = OTHER, "Sarcoidosis" → SUPP--.)
+- Attached to the Topic (e.g. a med name, the AE term): free text can go DIRECTLY into the topic variable, because the topic is meant to carry verbatim text anyway.
+- Attached to a Result qualifier: handled its own way, result field + supplemental detail.
+Unifying reflex: "Other, specify" → preserved, usually in SUPP--, destination decided by field role.
+
+**4.2.8 — Multiple values for one variable.**
+The trap: seeing "multiple values" and reflexively splitting into rows every time. The real discriminator — is the multiplicity in the TOPIC or in a QUALIFIER?
+- Topic-multiplicity = genuinely several observations (subject reports nausea + headache + dizziness). These are real separate events → SPLIT into multiple rows, one per event.
+- Qualifier-multiplicity = ONE observation with several descriptors (one nausea event implicated to TWO drugs). Only one event happened → must NOT duplicate rows (that would fake the event count) and must NOT cram both into one cell → the extra values go to SUPP--/RELREC, hanging off the single row.
+Applied: subject 010's SAE related to both dexamethasone AND a conmed = ONE AE row; the two-drug detail lives in the supplemental/relationship structure.
+
+**4.2.9 — Variable lengths.**
+The old SAS Transport v5 (.xpt) format had a 200-character ceiling. The IG says: that max is not a target — set each variable's length to FIT THE ACTUAL DATA it holds. Don't blanket-pad every column to 200 (wastes file size, signals sloppy metadata). Length should reflect real content.
+
+### Through-line worth remembering
+The flat one-row-per-observation structure can't hold everything, so SDTM has overflow valves: controlled STATUS values for the kinds of missing (4.2.5), and SUPP--/RELREC for extra qualifier values, "specify" free text, and qualifier-multiplicity (4.2.7, 4.2.8). Have now hit SUPP-- from four directions — Khoisan race rollup, natural keys, multiple drugs on one AE, "Other specify." Chapter 8 (Relationships) will tie these together.
+
+### Still owed
+- SEX source value 3=intersex → standard SEX target: PENDING verification against CT SEX codelist.
+- DM domain mapping still deferred until methodology chapters done.
+
+### Next
+4.3 — Coding and Controlled Terminology Assumptions. Should move faster: much of it formalizes what's already been done by hand this week (verifying against NCI EVS, submission-value vs synonym, extensible vs non-extensible codelists).
