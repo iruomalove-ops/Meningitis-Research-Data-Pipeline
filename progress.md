@@ -2023,3 +2023,29 @@ The flat one-row-per-observation structure can't hold everything, so SDTM has ov
 
 ### Next
 4.3 — Coding and Controlled Terminology Assumptions. Should move faster: much of it formalizes what's already been done by hand this week (verifying against NCI EVS, submission-value vs synonym, extensible vs non-extensible codelists).
+---
+## 2026-06-24 — PK Summary (Report 7) — Tier 2 and all reports complete
+
+### What was built
+Report 7 in sql/reports/07-pk-summary/ and the second analytics view, v_pk_parameters. Computes the three descriptive PK parameters — Cmax, Tmax, AUC(0–48h) — per volunteer, then summarises by cohort. This completes all seven reports (Tier 1 and Tier 2).
+
+### Decisions made this session
+
+**Consolidated all three PK calculations into one analytics view.** Cmax, Tmax, and AUC each started as a separate query, and folding them into one report query got tangled — the trapezoidal AUC logic doesn't sit cleanly beside a simple MAX in the same GROUP BY. Same lesson as v_lab_classified: when a calculation has multiple consumers (here the per-volunteer listing and the cohort summary, and Power BI later), it becomes a view. Each parameter lives in its own CTE inside v_pk_parameters — auc_calc (trapezoidal), cmax_tmax (ranking window) — joined at the end, so each is readable rather than one dense expression. The report then just reads the view: a per-volunteer listing and a GROUP BY cohort.
+
+**Computed AUC by the linear trapezoidal rule with LEAD.** Each adjacent pair of samples forms a trapezoid (½ × time-gap × sum of the two concentrations); LEAD fetches the next sample so each row computes the trapezoid to its right, summed per volunteer. BLQ set to 0 (PK convention — pre-dose has no drug), which required deciding BLQ handling explicitly since the pre-dose and tail 0.5s sit at the ends of the curve. This is AUC over the sampling window (0–48h), named honestly as such, not AUC_inf.
+
+**Excluded half-life, and documented why rather than approximating it.** t½ needs log-linear regression on the terminal elimination phase — a curve fit, not an arithmetic expression — which belongs in specialised PK software (Phoenix WinNonlin, scipy). Naming that boundary is a stronger position than a hand-rolled approximation that would need defending. Same discipline as the skipped lab→AE join in Report 6.
+
+### Verified
+v_pk_parameters: 18 rows, all three parameters matching the earlier piecewise computations (080 = Cmax 126.65, Tmax 0.5h, AUC 910.17).
+Dose proportionality is clean: mean Cmax 28 → 56.5 → 106 and mean AUC 195 → 395 → 764 across the 2/4/8 mg cohorts — both roughly double with each dose doubling, i.e. linear kinetics, no saturation. CV% 10–14% across all cohorts (low, consistent between-subject variability). 080 tops both Cmax and AUC — highest exposure, matching the strongest pharmacodynamic response in the safety labs.
+
+### Noted limitation (documented in the README, not a bug)
+Observed Tmax is 0.5h for every volunteer — the first post-dose sample. Consistent with rapid absorption, but the true peak could precede the first draw and be unobserved. Tmax is bounded below by the sampling schedule; the report states this rather than presenting 0.5h as certainly the true peak.
+
+### Still owed
+Lab → AE relationship (RELREC, next project); simulate_d5.py fasting code 3 → 2.
+
+### Next milestone
+All seven reports done. Next phase per plan: Power BI (visual translation of these same query patterns), then the SDTM mapping capstone (LB, AE, DS, PC, PP).
