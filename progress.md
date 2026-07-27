@@ -2049,3 +2049,21 @@ Lab → AE relationship (RELREC, next project); simulate_d5.py fasting code 3 �
 
 ### Next milestone
 All seven reports done. Next phase per plan: Power BI (visual translation of these same query patterns), then the SDTM mapping capstone (LB, AE, DS, PC, PP).
+---
+## 2026-06-24 — Power BI: data model built (galaxy schema)
+
+### What was built
+Connected Power BI to Oracle, imported the nine objects the dashboard needs, and built the full relationship model. No visuals yet — this session was the data model, which is the foundation everything visual depends on.
+
+### Decisions made this session
+
+**Import mode, not DirectQuery.** The initial connection defaulted to DirectQuery (Power BI querying Oracle live on every interaction), which broke the moment the database wasn't reachable and would leave the dashboard dead whenever Oracle isn't running. Switched to Import — the data is copied into the .pbix, so the dashboard is self-contained and portable, needs no live connection to build or view, and Oracle's setup fragility stops mattering once the load finishes. Correct for a static portfolio dataset.
+
+**Imported the two analytics views plus seven context tables, not the whole schema.** V_LAB_CLASSIFIED and V_PK_PARAMETERS carry the derived logic (classification, PK parameters) so the dashboard reads pre-computed data instead of re-implementing it in DAX. Staging tables deliberately excluded — they're the raw mirror and would be noise. Nine purposeful objects.
+
+**Modelled it as a galaxy schema after reading up on dimensional modelling.** SUBJECT and VISIT are conformed dimensions; the true facts (V_LAB_CLASSIFIED, PK_CONCENTRATION, ADVERSE_EVENT) hang off both as one-to-many — many rows per subject and per visit. V_PK_PARAMETERS, ELIGIBILITY, ENROLLMENT and SRC_REVIEW are one-row-per-subject — kept as separate satellites rather than folded into a wide subject dimension because they answer different business questions (who qualified, who was randomised, what the SRC decided), which keeps the model legible and changes localised. Power BI independently detected these four as one-to-one relationships, which confirmed the satellite modelling — a 1:1 satellite genuinely is a one-to-one, and only the real facts came out one-to-many. It defaulted the four 1:1 relationships to bidirectional cross-filtering (its standard behaviour for one-to-one), left as-is: harmless here, since with one row on each side there is nothing to over-count. Ten relationships total, filtering dimension→fact on the facts.
+
+**Built the relationships by hand.** Power BI auto-detected only VISIT→PK_CONCENTRATION and VISIT→ADVERSE_EVENT (clean numeric visit_id). It missed everything on record_id (a string key shared across many tables) and both views (views carry no foreign-key metadata). Created the remaining eight manually, which meant understanding each relationship rather than trusting auto-detect — and verifying the cardinalities afterward, which is how the 1:1 satellites surfaced.
+
+### Next milestone
+Build the dashboard pages, starting with Enrolment & Disposition (funnel, cohort fill, screen-failure reasons — the CONSORT structure from Report 3).
