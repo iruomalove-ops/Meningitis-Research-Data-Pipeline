@@ -2067,3 +2067,104 @@ Connected Power BI to Oracle, imported the nine objects the dashboard needs, and
 
 ### Next milestone
 Build the dashboard pages, starting with Enrolment & Disposition (funnel, cohort fill, screen-failure reasons — the CONSORT structure from Report 3).
+---
+## 2026-06-25 — Power BI: Power Query data cleanup across all tables
+
+### What was built
+No visuals yet — a full Power Query cleanup pass over all eleven imported tables to make the data analysis-ready before modelling. The Oracle connector auto-adds relationship-navigation columns (showing "Value"/"Table" placeholders) and imports numeric keys as decimals; neither can be turned off at source on this Power BI version, so both had to be handled in Power Query.
+
+### Decisions made this session
+
+**Identifiers to text, measures to decimal, ordinal fields to whole number.** The governing rule isn't "numbers bad" — it's match the type to what the column actually is. Identifiers (record_id, visit_id, all surrogate *_id keys, cohort) became text: their numeric value is meaningless, and leaving them numeric invites Power BI to auto-aggregate a key (summing visit_id is nonsense) and risks float-matching issues in relationships. Real quantities (lab and vital-sign values, weight, height, BMI, dose_per_kg) stay decimal. Ordinal sequence fields (visit_order, nominal_day) are whole numbers so they sort numerically — visit_order specifically drives chronological axis sorting; left as text it would sort 1, 10, 2, 3 and scramble the timeline.
+
+**Dates stripped to date-only.** Oracle DATE columns carry a time slot, so date fields displayed a phantom "12:00:00 AM". Onset, resolution, screening, assay, meeting and expiry dates were all set to Date type so the meaningless midnight stops showing. ae_onset_time was kept separately as a Time type — the CRF deliberately splits AE onset into date (always known) and time (often not), so they are two halves of one timestamp, not two competing sources of truth.
+
+**Removed the auto-added relationship-navigation columns from every table.** They are Power Query import artifacts, not data — cosmetic clutter that would also seed phantom relationships. Stripped from all eleven tables.
+
+**Dropped two fully-empty columns from the model, not from Oracle.** screen_failure_narration (eligibility) was 100% null — a real CRF field the simulation never populated; the screen-failure story is carried entirely by the coded screen_failure_reason. dlt_observed (src_review) was likewise dropped. Both remain in the Oracle source as part of the faithful schema; they are only excluded from the dashboard as dead weight.
+
+**Display formatting, not data rounding, for decimals.** dose_per_kg and the vitals/measurement values were set to fixed decimal places for consistent display — the full-precision value stays underneath; only the presentation is tidied. The distinction matters: rounding the stored value would discard precision permanently, whereas formatting only changes how it shows.
+
+### Column-level change log
+Every transformation applied, by table. Type/format changes only — no stored values were altered except where a column was dropped.
+
+**v_lab_classified**
+- visit_id: decimal → text
+- visit_order: decimal → whole number
+
+**v_pk_parameters**
+- no changes (verified correct as imported)
+
+**adverse_event**
+- visit_id: decimal → text
+- repeat_instance: decimal → text
+- ae_onset_time: text → time
+- adverse_event_id: decimal → text
+- ae_onset_date: date/time → date only
+- ae_resolution_date: date/time → date only
+- sae_reported_sponsor_date: date/time → date only
+- relationship-navigation columns: removed
+- column order: adverse_event_id moved to front, before record_id
+
+**dosing**
+- cohort_open_date: date/time → date only
+- planned_dose_mg: → whole number
+- dose_per_kg: → fixed decimal
+- imp_expiry: date/time → date only
+- dosing_id: decimal → text
+- relationship-navigation columns: removed
+
+**eligibility**
+- screening_date: date/time → date only
+- eligibility_id: decimal → text
+- screen_failure_narration: dropped (100% null)
+- relationship-navigation columns: removed
+
+**enrollment**
+- enrollment_id: decimal → text
+- relationship-navigation columns: removed
+
+**pk_concentration**
+- visit_id: decimal → text
+- repeat_instance: decimal → text
+- assay_date: date/time → date only
+- pk_concentration_id: decimal → text
+- relationship-navigation columns: removed
+
+**src_review**
+- sentinel_review_date: date/time → date only
+- src_meeting_date: date/time → date only
+- src_review_id: decimal → text
+- dlt_observed: dropped (all null)
+- relationship-navigation columns: removed
+
+**subject**
+- dob: date/time → date only
+- age_years: decimal → whole number
+- weight_kg: → fixed decimal
+- height_cm: → fixed decimal
+- bmi: → fixed decimal
+- subject_id: decimal → text
+- relationship-navigation columns: removed
+
+**visit**
+- visit_id: decimal → text
+- visit_order: → whole number
+- hours_from_dose: decimal (0.5 preserved — see bug note)
+- nominal_day: decimal → whole number
+- relationship-navigation columns: removed
+
+**vital_sign**
+- visit_id: decimal → text
+- vs_value: → fixed decimal
+- vital_sign_id: decimal → text
+- relationship-navigation columns: removed
+
+### Bug caught by verifying
+hours_from_dose was set to whole number, which rounded 0.5 (the 30-minute timepoint) to 0 — the fractional value the PK concentration-time curve's x-axis depends on. Switching the column back to decimal did not recover it, because the rounding was already baked into that step. Fixed by deleting the whole-number conversion step in Power Query so the query replays from source at full precision; 0.5 returned. The lesson: Power Query steps are transformations replayed from the source, so a rounding mistake is an editable step, not permanent damage — the source value was intact all along.
+
+### To verify at relationship-build
+Confirm record_id and visit_id are the same type (text) on both sides of every relationship, or the relationship will refuse to form.
+
+### Next milestone
+Rebuild the thirteen relationships (galaxy schema), then begin the dashboard visuals against the locked executive-summary design.
