@@ -159,4 +159,7 @@ FROM v_lab_classified
 GROUP BY lab_test, classification
 ORDER BY lab_test, classification;
 
+SELECT * FROM v_pk_parameters ORDER BY cohort, record_id;
+
+select * from enrollment
 

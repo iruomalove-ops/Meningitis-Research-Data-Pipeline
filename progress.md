@@ -2168,3 +2168,23 @@ Confirm record_id and visit_id are the same type (text) on both sides of every r
 
 ### Next milestone
 Rebuild the thirteen relationships (galaxy schema), then begin the dashboard visuals against the locked executive-summary design.
+---
+## 2026-06-26 — Power BI: theme applied, canvas set, header built
+
+### What was built
+The dashboard's visual foundation: imported the custom theme JSON (global palette, fonts, borders, per-visual styles), set the canvas, and built the complete header strip — navy banner, title, subtitle, and status pill. No data visuals yet; this was the design system and the top strip.
+
+### Decisions made this session
+
+**Custom theme JSON, built and imported rather than styling visuals individually.** The theme sets the whole palette globally — the three cohort blues in the first data-colour slots (so cohort auto-encodes dose light→dark, an ordinal ramp), the good/neutral/bad semantic colours for conditional formatting, text classes, and per-visual styles for cards, charts, tables and slicers. Every visual now inherits the system, so building is fast and consistent by default. One import error to fix — an alignment enum needed capitalising ("left" → "Left"); Power BI's theme validator is strict but names the exact path, so it was a direct fix.
+
+**Canvas settled at 1520 × 1520, arrived at by eye.** Started at 1300, went to 1400, and finally 1520 once the header was populated. When the status pill went in it didn't sit balanced against the title, so the canvas was widened and the already-placed shapes (banner, title, subtitle, pill) manually re-fitted to the new width — designing by eye and adjusting to what's actually on screen rather than trusting the planned number. Designing on a canvas slightly larger than the content also sidesteps Power BI's usable-width cap, which reserves an edge sliver (the full-bleed banner maxes at ~1391, not the full canvas width). Height may extend further as the lower content blocks fill in.
+
+**Header built from shapes and text boxes, not a visual.** The header is static design furniture, so: a navy (#14274E) full-bleed banner, then separate text boxes for title and subtitle. Kept them separate rather than one box so each is independently editable and positionable — the same single-responsibility instinct as the data model, one element one job. Border, shadow and background turned off on every header element so they sit flush — a flat design language, consistent across the strip.
+
+**Status pill — teal (#2D7C7A), one accent colour for the whole dashboard.** Considered a brighter green first; chose the teal because it's analogous to the navy (sits between blue and green), so it harmonises with the header rather than competing as a separate accent. Solid fill, not transparent — 17% transparency was tested but it dulled the teal by blending with the navy, so solid read cleaner. The dashboard deliberately uses a single accent colour to stay cohesive and premium rather than busy. The pill is intentionally third in the header hierarchy (title → subtitle → pill): noticeable, never dominant.
+
+**Established the dashboard's colour language.** Navy = structure/authority; light grey (#EDF0F3) = workspace/neutral background; white = information (KPI cards, typography); teal = positive study status. Flat design throughout — no shadows or borders as default furniture, added only where an element genuinely needs separation. A full written design rationale was produced alongside the build, which doubles as a portfolio artifact for explaining the choices.
+
+### Next milestone
+KPI card row (five cards: Screened, Randomised, Data Completeness, Protocol Deviations, SAEs) — the first visuals with DAX behind them. Three neutral white cards, two signal cards (deviations amber, SAE red) as deliberate exceptions.
