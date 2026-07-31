@@ -2188,3 +2188,233 @@ The dashboard's visual foundation: imported the custom theme JSON (global palett
 
 ### Next milestone
 KPI card row (five cards: Screened, Randomised, Data Completeness, Protocol Deviations, SAEs) — the first visuals with DAX behind them. Three neutral white cards, two signal cards (deviations amber, SAE red) as deliberate exceptions.
+---
+## 2026-07-31 — Power BI: KPI component system, dashboard wireframe & visual design language
+
+### What was built
+
+The dashboard architecture was completed before adding any data visuals. Instead of immediately creating charts, the session focused on establishing a reusable component system and wireframing the entire dashboard. By the end of the session the report had evolved from a header into a complete executive dashboard skeleton consisting of KPI cards, master content panels, grouped containers and a refined visual hierarchy ready for data population.
+
+---
+
+### Decisions made this session
+
+**Designed the KPI cards as reusable components rather than immediately inserting Card visuals.** The KPI row was built first using rounded rectangle shapes to establish the dashboard's visual language before introducing any DAX measures. Multiple versions were created with different proportions, corner radii, shadows and borders. The preferred design was selected through visual comparison while the remaining prototypes were discarded. The final KPI card became the master component from which all future cards inherit their styling.
+
+Final specification:
+
+- Rounded Rectangle
+- 256 × 160 px
+- White fill
+- Border OFF
+- Shape Shadow ON
+- General Shadow OFF
+- Custom rounded corners established through visual refinement
+
+The objective was to perfect the component once and reuse it throughout the dashboard.
+
+---
+
+**Adopted a component-first design methodology.** Rather than styling every new object independently, the dashboard now follows a reusable component system. Every new panel begins as a duplicate of an existing approved component before being resized and repurposed. This creates consistency across the interface while significantly reducing formatting work.
+
+Workflow established:
+
+1. Design one component.
+2. Refine through iteration.
+3. Approve the component.
+4. Duplicate.
+5. Resize.
+6. Reuse.
+
+The dashboard evolved into a small design system rather than a collection of individually formatted visuals.
+
+---
+
+**Built the complete dashboard wireframe before introducing any charts.** The decision was made to prioritise architecture over content. Instead of placing visuals immediately, the entire dashboard layout was constructed using placeholder panels to validate spacing, hierarchy and composition.
+
+The dashboard now follows three primary regions:
+
+```
+Header
+
+↓
+
+Executive KPI Row
+
+↓
+
+Main Analytics Area
+```
+
+The analytics region is divided into two master columns:
+
+- Left column (~40%)
+- Right column (~60%)
+
+The wider right column intentionally reserves more space for analytical charts, while the narrower left column supports vertically organised process information such as subject disposition, cohort progression and protocol review.
+
+---
+
+**Created the master content panels before populating them.** Large analytical regions were created using placeholder shapes to establish the page composition.
+
+Current structure:
+
+Right column
+
+- Upper analytical panel
+- Lower analytical panel
+
+Left column
+
+- Four vertically stacked analytical sections
+
+Approximate dimensions established during design:
+
+Upper Right Panel
+
+```
+576 × 832 px
+```
+
+Lower Right Panel
+
+```
+512 × 832 px
+```
+
+Left Panels
+
+```
+256 × 640 px
+```
+
+These panels define the dashboard's information hierarchy before any visualisations are inserted.
+
+---
+
+**Adjusted corner radius according to component scale.** The rounded corners that worked well for small KPI cards appeared too soft when applied to large analytical panels. Rather than enforcing identical styling everywhere, the dashboard adopted scale-aware rounding.
+
+Large panels now use approximately:
+
+```
+7% corner radius
+```
+
+This preserves the modern appearance while preventing oversized panels from looking inflated. The status pill intentionally remains the most rounded element in the interface.
+
+---
+
+**Developed visual depth through layering rather than heavy shadows.** The dashboard deliberately avoids dramatic floating effects. Instead, depth is created using multiple visual layers.
+
+Hierarchy established:
+
+1. Page background
+2. Primary analytical panels
+3. Secondary grouping containers
+4. Charts and controls
+5. Status accents
+
+This produces a calm enterprise aesthetic similar to modern clinical analytics platforms.
+
+---
+
+**Refined panel styling through experimentation.** Multiple combinations of transparency, borders and shadows were tested before arriving at the final panel style.
+
+Final panel specification:
+
+- White fill
+- Approximately 12% transparency
+- Thin navy border
+- Shape Shadow ON
+- General Shadow OFF
+
+Initially borders were removed entirely. However, after introducing transparency the panels appeared visually washed out. Reintroducing a thin navy border created subtle definition while preserving the soft floating effect.
+
+Rather than relying on stronger shadows, the dashboard now achieves separation through restrained transparency and subtle outlining.
+
+---
+
+**Created a secondary grouping container component.** The cohort selector in the reference dashboard sits inside a soft grouping container rather than directly on the page. Instead of copying the original, a reusable secondary surface component was designed.
+
+Final specification:
+
+Base colour
+
+```
+#ECECF7
+```
+
+Transparency
+
+```
+77%
+```
+
+Thin navy border
+
+Purpose:
+
+Provide visual grouping for related controls without competing with the primary analytical panels.
+
+This component will be reused for cohort selectors, grouped filters and supporting interface elements.
+
+---
+
+**Refined the page background to soften contrast.** Rather than relying entirely on the original light grey theme background, the page was adjusted towards white with approximately 50% transparency.
+
+This reduced contrast between the page and the analytical panels, allowing the navy borders to define structure while producing a softer, more premium appearance.
+
+---
+
+**Established the navy border as a structural design element.** Through experimentation the thin navy outline proved more effective than increasing shadow intensity.
+
+Rather than functioning as decoration, the border now performs three roles:
+
+- separates adjacent white surfaces
+- reinforces the dashboard structure
+- creates the illusion that panels float gently above the page
+
+This became a defining characteristic of the dashboard's visual language.
+
+---
+
+**Optical alignment replaced mathematical perfection.** While positioning the KPI cards, Power BI's alignment tools produced inconsistent behaviour. Rather than forcing mathematically equal spacing, the dashboard was refined using optical alignment.
+
+One KPI card was intentionally adjusted slightly wider to balance the larger panels beneath it. The final arrangement prioritises perceived visual balance over identical measurements.
+
+This follows the same principle used in professional typography and interface design, where visual harmony is often more important than strict geometry.
+
+---
+
+**Whitespace became an intentional design element.** Spacing throughout the dashboard was treated as part of the design rather than unused space.
+
+Consistent breathing room was maintained between:
+
+- Header and KPI row
+- KPI row and content panels
+- Master analytical regions
+- Internal grouped sections
+
+The objective is to minimise cognitive load while improving readability and creating a calm executive reporting experience.
+
+---
+
+**Established a reusable dashboard component library.** By the end of the session the dashboard no longer consisted of unrelated shapes.
+
+The current design system now includes:
+
+- Executive Header
+- Status Pill
+- KPI Summary Card
+- Master Analytical Panel
+- Secondary Group Container
+
+Future report pages can now be assembled from these standardised components rather than redesigned from scratch.
+
+---
+
+### Next milestone
+
+Replace the wireframe with functional analytical content.
+
+
