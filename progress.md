@@ -2416,5 +2416,369 @@ Future report pages can now be assembled from these standardised components rath
 ### Next milestone
 
 Replace the wireframe with functional analytical content.
+---
+## 2026-08-03 — Power BI Executive Dashboard: Component System, KPI Architecture & DAX Foundation
+
+### What was built
+
+This session shifted the dashboard from a static wireframe into the beginning of a functional executive dashboard. The KPI component system was established, reusable DAX measures were introduced, the first dashboard metrics were modelled, and the first pass of the KPI row (headers and icons) was completed.
+
+Rather than attempting to complete one KPI card from start to finish, the development workflow itself was redesigned into a layered build process. This dramatically reduced complexity and will be used for the remainder of the dashboard.
+
+---
+
+# Major Design Decision
+
+## Adopted a layered component workflow
+
+Originally the plan was to complete one KPI card entirely before moving to the next.
+
+After experimenting with the process, it became clear that constantly switching between typography, DAX, formatting, positioning and styling was unnecessarily difficult.
+
+The workflow was redesigned.
+
+Instead of completing one KPI at a time, the dashboard will now be built in horizontal passes.
+
+Current workflow:
+
+### Pass 1
+Header on every KPI
+
+- label
+- icon
+- spacing
+- typography
+
+### Pass 2
+
+Main KPI value on every KPI
+
+- Card visual
+- measure
+- typography
+- alignment
+
+### Pass 3
+
+Supporting information
+
+- secondary measure
+- descriptive text
+- formatting
+
+### Pass 4
+
+Final polish
+
+- alignment
+- spacing
+- icon sizing
+- consistency
+- visual refinement
+
+This approach keeps the brain focused on solving one design problem at a time rather than several simultaneously.
+
+This workflow became one of the biggest improvements of the session.
+
+---
+
+# Established the KPI component architecture
+
+Each KPI card is no longer treated as a single visual.
+
+Instead each card is composed of independent components.
+
+```
+Rounded Rectangle
+        +
+Header Text
+        +
+Icon
+        +
+Card Visual
+        +
+Supporting Text
+```
+
+Every element can now be edited independently without affecting the rest of the KPI.
+
+This provides significantly more flexibility than relying on a single Power BI visual.
+
+---
+
+# Decision: Card visual instead of KPI visual
+
+Initially considered using Power BI's KPI visual.
+
+After reviewing its intended purpose, the decision was made to use the standard Card visual.
+
+Reasoning:
+
+The dashboard is presenting executive clinical summary statistics rather than trend-based business KPIs.
+
+Power BI's KPI visual is designed for:
+
+- trend axis
+- target values
+- performance over time
+
+The dashboard instead requires:
+
+- headline statistic
+- supporting text
+- fully customised layout
+
+Therefore the Card visual provides much greater design flexibility.
+
+---
+
+# Created the Measures table
+
+A dedicated Measures table was introduced.
+
+Purpose:
+
+- centralise every DAX calculation
+- prevent measures becoming scattered across fact tables
+- improve long-term maintainability
+
+The dummy column remains visible for now.
+
+Hiding it was postponed because the current Power BI interface differs slightly from older versions.
+
+---
+
+# Built the first DAX measures
+
+Created:
+
+```
+Volunteers Screened
+```
+
+```
+Screen Failures
+```
+
+```
+Screen Failure Rate
+```
+
+```
+Screen Failure Summary
+```
+
+These measures now provide the foundation for the first executive KPI.
+
+---
+
+# KPI Header System completed
+
+Completed the first design pass across the KPI row.
+
+Each KPI now contains:
+
+- header text
+- icon
+- consistent typography
+- consistent positioning
+
+Current headers:
+
+- Volunteers Screened
+- Randomised & Dosed
+- Data Completeness
+- Protocol Deviations
+
+Remaining KPI(s) will follow the exact same component specification.
+
+---
+
+# Icon design language established
+
+Initially considered:
+
+- emojis
+- built-in Power BI icons
+
+Ultimately adopted SVG icons.
+
+Reasons:
+
+- infinitely scalable
+- cleaner appearance
+- consistent stroke weight
+- professional portfolio quality
+
+A challenge emerged:
+
+Downloaded SVGs appeared solid black.
+
+Investigation showed many SVGs hard-code their fill colour.
+
+Solution:
+
+Future icons will either:
+
+- use editable SVG files
+- or icons supporting currentColor/stroke styling
+
+allowing them to integrate with the dashboard palette.
+
+---
+
+# Intentional icon emphasis
+
+A deliberate decision was made **not** to let the icons fade into the typography.
+
+Instead:
+
+- icons are slightly larger
+- icons are slightly darker
+
+Reasoning:
+
+The icons act as visual anchors for each KPI.
+
+Using the same muted colour as the headings caused them to disappear.
+
+Increasing their visual weight improved scanability while maintaining the overall clinical aesthetic.
+
+This became part of the dashboard's visual identity rather than matching the reference dashboard exactly.
+
+---
+
+
+# Problems encountered
+
+## Power BI interface differences
+
+Problem:
+
+Older tutorials referenced panes and settings not available in the July 2026 Store version.
+
+Solution:
+
+Adapted the workflow around the current interface rather than relying on outdated documentation.
+
+---
+
+## SVG insertion
+
+Problem:
+
+Copied SVG code could not immediately be inserted into Power BI.
+
+Solution:
+
+Established the correct workflow:
+
+Heroicons / Fluent Icons
+
+↓
+
+Save SVG
+
+↓
+
+Insert Image
+
+↓
+
+Resize
+
+↓
+
+Position
+
+---
+
+## Black SVG icons
+
+Problem:
+
+Downloaded icons appeared completely black.
+
+Cause:
+
+Hard-coded SVG fill colour.
+
+Solution:
+
+Future SVGs will either:
+
+- be edited before import
+---
+
+## Object manipulation bug
+
+Problem:
+
+Objects occasionally refused to move, duplicate or paste.
+
+Observation:
+
+Likely a temporary Power BI UI issue rather than a design problem.
+
+No structural changes were required.
+
+---
+
+## Cognitive overload while building KPIs
+
+Problem:
+
+Attempting to complete an entire KPI card before moving on caused constant switching between:
+
+- DAX
+- formatting
+- typography
+- positioning
+- visuals
+
+Solution:
+
+Redesigned the development process into horizontal passes across all KPI cards.
+
+This proved significantly more manageable.
+
+---
+
+# Lessons learned
+
+Professional dashboards are built as reusable systems rather than isolated visuals.
+
+Good UI design is as much about process as aesthetics.
+
+Separating:
+
+- layout
+- typography
+- data
+- refinement
+
+dramatically reduces complexity.
+
+---
+
+# Current dashboard status
+
+Completed:
+
+- Executive header
+- Status pill
+- Dashboard wireframe
+- Primary layout panels
+- KPI component system
+- Measures table
+- Initial DAX measures
+- KPI header pass
+- SVG icon workflow
+
+Next session:
+
+## Pass 2
+
+Populate all KPI cards with their primary Card visuals and DAX measures while maintaining the established component architecture.
 
 
