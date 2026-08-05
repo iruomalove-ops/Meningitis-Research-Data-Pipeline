@@ -2780,5 +2780,25 @@ Next session:
 ## Pass 2
 
 Populate all KPI cards with their primary Card visuals and DAX measures while maintaining the established component architecture.
+## 2026-08-04 — Power BI: KPI card row built with DAX measures
+
+### What was built
+The five-card KPI strip below the header, data-bound and styled: Volunteers Screened (100), Randomised & Dosed (18), Data Completeness (100%), Protocol Deviations (1), Serious AEs (1) — each with a big number and a supporting sub-line. Imported the diary_symptom table to complete the record count. Header was built last session; this session added the values.
+
+### Decisions made this session
+
+**One card visual per KPI holding multiple values, not two stacked cards.** The original plan was one card for the number and a second for the sub-line, done five times. That failed — two card visuals overlapping block each other and can't be independently labelled. The fix, found by hitting the wall: a single Card visual holds multiple fields arranged as vertical tiles (big number tile on top, sub-line tile below), styled independently within one visual. Cleaner than overlapping cards, and it makes each KPI a self-contained unit that moves as one — which also resolves the earlier "text inside the card" question, since the sub-line now lives in the card rather than as a separate floating text box.
+
+**Count-based cards compute live; single-event cards use static captions.** The three metric cards derive from live DAX (screened count, randomised count, completeness percentage) — proving the data is real and the logic works. The two signal cards (deviation, SAE) describe one known event each, so their sub-lines are static text ("Minor · vital sign window +15 min", "Gastroenteritis · unrelated · resolved") — there is nothing to compute in a caption of a single fixed fact, so a constant is honest rather than a contrived calculation. This mix is correct: metrics computed, single-event descriptions curated.
+
+**Imported diary_symptom to make the record count complete and live.** Data completeness and the record-count sub-line both sum the five reconciliation instruments (PK 144 + vitals 1080 + labs 918 + diary 504 + SRC 18 = 2664). Diary wasn't in the original eleven-table import, so it was added — Transform Data to strip relationship-navigation columns and fix ID types like the others, then related to subject and visit as a fact. This lets Data Completeness compute live to 100% rather than being asserted, keeping it consistent with the record-count card (both derive from the same sum). Coded flag columns are text after the Power Query cleanup, so all DAX filters compare to quoted strings (= "1", not = 1) — caught via a text-vs-integer comparison error.
+
+**Number typography in Constantia, labels in Segoe UI.** The big figures use Constantia (serif) against Segoe UI (sans) labels, giving the numbers a distinguished report-like weight. Sizes: 40pt number, 10pt sub-line. Colours from the theme: #37474F for the number (primary), #607D80 for the sub-line (muted secondary) — the size and colour hierarchy makes the number dominate and the sub-line support. Built one card fully, then copied the style to the other four and changed only the values, so all five are consistent by construction.
+
+### Still owed
+Signal-card fills — the deviation card (soft amber) and SAE card (soft red) are still white; they need their fills and coloured borders to read as risk signals rather than plain counts. The deliberate exceptions to the white-information rule.
+
+### Next milestone
+Finish the two signal-card fills, then move to the content zones below the KPI strip — starting with the cohort filter bar and the PK dose-proportionality hero chart.
 
 
