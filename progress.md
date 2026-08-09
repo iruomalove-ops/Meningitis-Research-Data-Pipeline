@@ -2800,5 +2800,28 @@ Signal-card fills — the deviation card (soft amber) and SAE card (soft red) ar
 
 ### Next milestone
 Finish the two signal-card fills, then move to the content zones below the KPI strip — starting with the cohort filter bar and the PK dose-proportionality hero chart.
+---
+## 2026-08-06 — Power BI: Subject Disposition panel + Dose Escalation table
+
+### What was built
+Two left-column panels completed. Box 1 (Subject Disposition & Flow): the 100→28→18→10 funnel as live cards with state styling, plus the screen-fail bar chart. Box 2 (Dose Escalation & SRC Sign-off): a five-column table (Cohort, Dose, Sentinel Pair, SRC Decision, Date) bound to real data with decode logic.
+
+### Decisions made this session
+
+**The disposition funnel as live cards, not static shapes.** Each of the four figures (screened/eligible/dosed/reserve) is a card bound to a DAX measure — Screened = COUNTROWS(subject), Eligible and Reserve filtered on their status columns. The choice was deliberate: showcasing the capability to wire a funnel to live data matters more than what a locked dataset strictly needs, since in a real trial these figures change constantly. Cards state-styled to encode the funnel — escalating blue toward the highlighted Dosed card, grey border on Reserve to set it apart as held-aside.
+
+**Screen-fail bars kept as a standard bar chart rather than rebuilt as track-and-fill.** The mockup showed progress-bar style (full-width track, partial fill), which a native Power BI bar chart can't produce. Rather than rebuild as a matrix or custom shapes for an aesthetic that adds no information, kept the standard bars — they carry the same data (51/9/8/4 with percentages) and read cleanly.
+
+**Cohort→dose shown by formatting the real value, not a SWITCH mapping.** planned_dose_mg carries the actual dose; a custom format string ("0 mg") displays "2 mg" while keeping it numeric. Rejected a SWITCH mapping cohort→dose because that would hardcode a second source of truth — the real dose already lives in the data, so formatting it is honest where re-deriving it isn't.
+
+**SRC Decision "Complete" for C3 via a display rule, acknowledged as such.** The data has src_decision = Proceed for all three cohorts, but the terminal cohort completes the escalation rather than proceeding to a non-existent next dose. A calculated column decodes the base decision and applies a rule: highest cohort + Proceed displays as Complete (using MAX(cohort) rather than hardcoding 3, so it expresses the concept). This is display logic, not data — the honest fix would be a "Complete" value in the src_decision codelist, flagged for a future iteration. Conditional cell colours (green Proceed, blue Complete) applied; the mockup's pill-badge shape doesn't translate to table cells, so tinted cells stand in.
+
+**Dates formatted to day-month display.** src_meeting_date shown as "dd mmm" via format string, keeping the underlying date intact.
+
+### Design system continued
+Panel headers standardised at 23px from each panel's top edge (title bold #374747 14pt, context label italic #607D8B 12pt), matching the disposition panel — consistent internal padding across panels, the same discipline as consistent gutters.
+
+### Next milestone
+Box 3 (Cross-instrument Data Cleaning table) and Box 4 (Protocol Exceptions & SAE listing), then the entire right column — the PK dose-proportionality hero chart and safety biomarker table.
 
 
