@@ -2823,5 +2823,29 @@ Panel headers standardised at 23px from each panel's top edge (title bold #37474
 
 ### Next milestone
 Box 3 (Cross-instrument Data Cleaning table) and Box 4 (Protocol Exceptions & SAE listing), then the entire right column — the PK dose-proportionality hero chart and safety biomarker table.
+---
+## 2026-08-07 — Power BI: reconciliation table + SAE listing — left column complete
+
+### What was built
+The two remaining left-column panels. Box 3 (Cross-instrument Data Cleaning): a reconciliation table with live record counts and curated status/notes. Box 4 (Protocol Exceptions & SAE Line Listing): a three-event curated listing. With these, the entire left column is built (disposition, dose escalation, reconciliation, SAE listing). Canvas extended to 1650 to accommodate the fourth panel.
+
+### Decisions made this session
+
+**Reconciliation table built using a disconnected reporting dimension.** Created a small Reconciliation Summary table to define the instrument rows (PK Samples, Vital Signs, Safety Labs, Diary, SRC Review, All domains). Record counts are populated dynamically through a single `Record Count` measure that uses `SELECTEDVALUE` and `SWITCH` to return the appropriate `COUNTROWS()` result from each fact table. This keeps the display structure independent from the underlying calculations while allowing the counts to remain live. Added calculated columns for `Status` and `Reconciliation Notes` to store the verified reconciliation outcomes for each instrument. Introduced a `SortOrder` column and configured `Instrument` to sort by it, preserving the intended reporting order instead of Power BI's default alphabetical sorting.
+
+**Status and notes added as reporting metadata.** Added `Status` and `Reconciliation Notes` as calculated columns in the reporting table to present the verified reconciliation outcomes for each instrument. This keeps the live calculations focused on record counts while storing the documented reconciliation findings alongside each reporting row.
+
+**Added an "All domains" summary row.** Extended the reporting table with a sixth summary row representing the complete dataset. The `Record Count` measure aggregates the five live instrument counts (2,664), while the associated status and notes provide the overall reconciliation outcome. Power BI's automatic total row was disabled to avoid duplicating the summary.
+
+**Built the Protocol Exceptions & SAE Line Listing as a curated reporting table.** Created a small `DATATABLE` containing the three documented study events (Subject 010 SAE, Subject 056 protocol deviation, Subject 080 adverse event), including cohort, event description, grade and outcome. This provides a concise CSR-style safety summary using curated presentation text.
+
+**Panel title aligned with the data presented.** Retained the title **Protocol Exceptions & SAE Line Listing** to accurately reflect the mixture of protocol deviations, adverse events and serious adverse events shown in the panel.
+
+### Still owed
+- Conditional formatting for the **Status** column in the reconciliation table.
+- Conditional formatting for **Grade** in the SAE listing (Grade 3 red, Grade 1 amber, Minor blue).
+
+### Next milestone
+Build the entire right column: PK dose-proportionality hero chart, safety biomarker table and the high-responder spotlight. Finish with the remaining conditional formatting, final styling pass and PDF export.
 
 
