@@ -2847,5 +2847,27 @@ The two remaining left-column panels. Box 3 (Cross-instrument Data Cleaning): a 
 
 ### Next milestone
 Build the entire right column: PK dose-proportionality hero chart, safety biomarker table and the high-responder spotlight. Finish with the remaining conditional formatting, final styling pass and PDF export.
+## 2026-08-09 — Power BI: right column complete — dashboard finished
+
+### What was built
+The entire right column and the finishing elements, completing the dashboard. The PK dose-proportionality hero chart with its summary table, the safety lab biomarker table, the high-responder spotlight, the cohort cross-filter slicer, and the footnote. The executive summary is now fully built.
+
+### Decisions made this session
+
+**Safety biomarker table computed live from v_lab_classified via SUMMARIZE + ADDCOLUMNS.** Per-analyte means and abnormality counts per cohort, all live from the view — the analyte list, the +48h means, and the flag counts are data-driven, with only the clinical summaries curated. A context bug was caught and fixed: passing the whole filtered BaseLabs table as a CALCULATE filter overrode the per-analyte row context, so every count spanned all analytes (giving inflated numbers like 6/11); capturing the current analyte in a VAR and filtering to it explicitly fixed it. Blank counts were coalesced to 0 so flags read "0 / 4 / 6" rather than "/ 4 / 6".
+
+**Flags changed to count any abnormality (high or low), not just high.** Originally counting only High classifications, which hid the C2 potassium low entirely. Changed to CLASSIFICATION <> "Normal" and relabelled "FLAGS" — so the mild hypokalemia (0/1/0) now surfaces, which is the honest representation of an out-of-range value in either direction. Verified lymphocytes stayed 0/0/0 (the dose-dependent decline never crossed the floor — a trend within normal, correctly not flagged).
+
+### Clinical accuracy corrections caught by verifying
+Several curated claims were cross-checked against the data timeline and corrected:
+- The Key Safety Events table had 056 and 080's events wrong — 056 (a protocol deviation) was labelled as an ALT elevation, and 080 (the ALT subject) was labelled "mild headache". Corrected each to its real event.
+- 080's ALT was labelled "Minor" — a category error, since Minor is deviation-severity language while AEs use CTCAE grades. Corrected to Grade 1.
+- The ALT clinical summary said "resolved by Day 7", but the elevation appeared at Day 7 (the final visit) — it didn't resolve then. Corrected to reflect the delayed onset, and the spotlight now states "resolution not captured in-study" rather than asserting a resolution never measured.
+- Potassium 3.3 correctly kept in the mild register (not red) — mild expected mineralocorticoid effect, not an alarm.
+
+**Colour logic locked to severity meaning across the whole dashboard.** Red = Grade 3 / serious (only the SAE). Amber = mild / expected / caution (the deviation, Grade 1 ALT, the biomarker flags). Green = clean / proceed. Consistent so a reviewer reads severity by colour: nothing in the safety table is red because nothing there is serious — the dose-related elevations are amber (expected), which is the honest clinical reading.
+
+### Next milestone
+Final PDF export for the portfolio (done). Remaining: any last styling polish, then the SDTM mapping capstone as the next project phase.
 
 
